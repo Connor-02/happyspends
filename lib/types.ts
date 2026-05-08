@@ -6,7 +6,7 @@ export interface UserSettings {
   name: string;
   currency: string;
   currencySymbol: string;
-  budgetPeriod: 'monthly' | 'weekly';
+  budgetPeriod: 'monthly' | 'weekly' | 'fortnightly';
   startDay: number; // 1-28
   theme: ThemeOption;
   rollover: number;
