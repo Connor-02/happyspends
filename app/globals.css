@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --accent: #ec4899;
+  --accent-light: #fce7f3;
+  --accent-dark: #be185d;
+}
+
+.theme-blue {
+  --accent: #6366f1;
+  --accent-light: #eef2ff;
+  --accent-dark: #4338ca;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900;
+  overscroll-behavior: none;
+}
+
+.dark body {
+  @apply bg-gray-950 text-gray-50;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
+.dark ::-webkit-scrollbar-thumb { @apply bg-gray-700; }
+
+/* Safe area for mobile PWA */
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+
+/* Gradient utilities */
+.gradient-pink { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); }
+.gradient-blue { background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%); }
+.gradient-green { background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); }
+.gradient-orange { background: linear-gradient(135deg, #f97316 0%, #ef4444 100%); }
+
+/* Card base */
+.card {
+  @apply bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800;
+}
+
+/* Number animation */
+.tabular-nums { font-variant-numeric: tabular-nums; }
