@@ -16,6 +16,8 @@ import { NotificationPermissionBanner } from '@/components/premium/NotificationP
 import { computeSpendingStreak } from '@/lib/habitEngine';
 import { getUnreadCount } from '@/lib/premiumStorage';
 import { runReminderChecks } from '@/lib/notificationService';
+import { GoalSavingsBubble } from '@/components/dashboard/GoalSavingsBubble';
+import { buildGoalInputsFromStore, calculateGoalSavingsRecommendation } from '@/lib/goalSavingsCalculations';
 
 function stagger(i: number) {
   return { initial: { y: 20, opacity: 0 }, animate: { y: 0, opacity: 1 }, transition: { delay: i * 0.06, duration: 0.35 } };
@@ -31,6 +33,11 @@ export default function DashboardPage() {
   const categorySummaries = useMemo(() => computeCategorySummaries(store), [store]);
   const insights = useMemo(() => generateInsights(store, summary, categorySummaries), [store, summary, categorySummaries]);
   const { streak } = useMemo(() => computeSpendingStreak(store.transactions), [store.transactions]);
+
+  const goalRecommendations = useMemo(() => {
+    const inputs = buildGoalInputsFromStore(store);
+    return inputs.map(calculateGoalSavingsRecommendation);
+  }, [store]);
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -179,8 +186,13 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
-      {/* Summary grid */}
+      {/* Goals Savings Bubble */}
       <motion.div {...stagger(6)}>
+        <GoalSavingsBubble recommendations={goalRecommendations} sym={sym} />
+      </motion.div>
+
+      {/* Summary grid */}
+      <motion.div {...stagger(7)}>
         <div className="grid grid-cols-3 gap-3">
           {summaryCards.map((card) => (
             <Card key={card.label} className="p-3">
@@ -203,7 +215,7 @@ export default function DashboardPage() {
 
       {/* Allocation chart */}
       {allocation.length > 0 && (
-        <motion.div {...stagger(7)}>
+        <motion.div {...stagger(8)}>
           <Card>
             <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Spending Allocation</p>
             <AllocationChart data={allocation} symbol={sym} />
@@ -213,7 +225,7 @@ export default function DashboardPage() {
 
       {/* Cash flow chart */}
       {cashFlowData.length > 0 && (
-        <motion.div {...stagger(8)}>
+        <motion.div {...stagger(9)}>
           <Card>
             <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Cash Flow</p>
             <CashFlowChart data={cashFlowData} symbol={sym} />
@@ -223,7 +235,7 @@ export default function DashboardPage() {
 
       {/* Smart Insights */}
       {insights.length > 0 && (
-        <motion.div {...stagger(9)} className="space-y-2">
+        <motion.div {...stagger(10)} className="space-y-2">
           <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Smart Insights</p>
           {insights.slice(0, 4).map((insight) => (
             <div key={insight.id} className={`card p-3 flex items-start gap-3 ${
@@ -247,7 +259,7 @@ export default function DashboardPage() {
       )}
 
       {/* Quick actions */}
-      <motion.div {...stagger(10)}>
+      <motion.div {...stagger(11)}>
         <div className="grid grid-cols-2 gap-3">
           <motion.button
             whileTap={{ scale: 0.97 }}

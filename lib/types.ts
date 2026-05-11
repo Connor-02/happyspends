@@ -49,6 +49,7 @@ export interface Goal {
   currentAmount: number;  // tracked by linked transactions + starting
   color?: string;
   createdAt: string;
+  targetDate?: string;    // ISO date string (optional target completion date)
 }
 
 // ─── Goal Transaction ────────────────────────────────────────────────────────
