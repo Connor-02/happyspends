@@ -1,14 +1,18 @@
-'use client';
+﻿'use client';
 import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import {
+  Bell, TrendingUp, ShoppingBag, ChevronRight,
+  ArrowUpRight, ArrowDownLeft, Target, Plus, BarChart2
+} from 'lucide-react';
 import { useStore } from '@/components/providers/StoreProvider';
-import { computeBudgetSummary, computeAllocation, computeMonthlyCashFlow, formatCurrency, generateInsights, computeCategorySummaries } from '@/lib/calculations';
-import { Card } from '@/components/ui/Card';
+import {
+  computeBudgetSummary,
+  formatCurrency,
+  computeCategorySummaries,
+} from '@/lib/calculations';
 import { ProgressRing } from '@/components/ui/ProgressRing';
-import { Badge } from '@/components/ui/Badge';
-import { AllocationChart } from '@/components/charts/AllocationChart';
-import { CashFlowChart } from '@/components/charts/CashFlowChart';
 import { DailyCheckIn } from '@/components/premium/DailyCheckIn';
 import { QuickAddSheet } from '@/components/premium/QuickAddSheet';
 import { InstallPrompt } from '@/components/premium/InstallPrompt';
@@ -17,87 +21,103 @@ import { computeSpendingStreak } from '@/lib/habitEngine';
 import { getUnreadCount } from '@/lib/premiumStorage';
 import { runReminderChecks } from '@/lib/notificationService';
 import { GoalSavingsBubble } from '@/components/dashboard/GoalSavingsBubble';
-import { buildGoalInputsFromStore, calculateGoalSavingsRecommendation } from '@/lib/goalSavingsCalculations';
+import { SpendingByCategory } from '@/components/dashboard/SpendingByCategory';
+import {
+  buildGoalInputsFromStore,
+  calculateGoalSavingsRecommendation,
+} from '@/lib/goalSavingsCalculations';
 
-function stagger(i: number) {
-  return { initial: { y: 20, opacity: 0 }, animate: { y: 0, opacity: 1 }, transition: { delay: i * 0.06, duration: 0.35 } };
+// ─── Stagger helper ───────────────────────────────────────────────────────────
+function s(i: number) {
+  return {
+    initial: { y: 18, opacity: 0 },
+    animate: { y: 0, opacity: 1 },
+    transition: { delay: i * 0.055, duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] },
+  };
 }
 
+// ─── Format helpers ───────────────────────────────────────────────────────────
+function fmtAmt(n: number, sym: string) {
+  return sym + Math.abs(n).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+}
+
+const displayFont = { fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" };
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { store } = useStore();
   const sym = store.settings.currencySymbol;
 
   const summary = useMemo(() => computeBudgetSummary(store), [store]);
-  const allocation = useMemo(() => computeAllocation(summary), [summary]);
-  const cashFlowData = useMemo(() => computeMonthlyCashFlow(store.transactions), [store.transactions]);
   const categorySummaries = useMemo(() => computeCategorySummaries(store), [store]);
-  const insights = useMemo(() => generateInsights(store, summary, categorySummaries), [store, summary, categorySummaries]);
-  const { streak } = useMemo(() => computeSpendingStreak(store.transactions), [store.transactions]);
-
   const goalRecommendations = useMemo(() => {
-    const inputs = buildGoalInputsFromStore(store);
-    return inputs.map(calculateGoalSavingsRecommendation);
+    return buildGoalInputsFromStore(store).map(calculateGoalSavingsRecommendation);
   }, [store]);
+  const { streak } = useMemo(() => computeSpendingStreak(store.transactions), [store.transactions]);
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     setUnreadCount(getUnreadCount());
-    // Run reminder checks on dashboard load
     runReminderChecks(store);
   }, [store]);
 
-  const spendingRatio = summary.plannedIncome > 0
-    ? (summary.totalExpenses + summary.totalBills) / (summary.plannedIncome || 1)
-    : 0;
+  const spendingRatio =
+    summary.plannedIncome > 0
+      ? (summary.totalExpenses + summary.totalBills) / summary.plannedIncome
+      : 0;
 
-  const healthColor = summary.budgetHealthScore >= 80 ? '#34d399' : summary.budgetHealthScore >= 50 ? '#f59e0b' : '#ef4444';
-
-  // Upcoming bills (categories with planned > 0 and no/low actual)
-  const upcomingBills = store.categories
-    .filter((c) => c.type === 'bill' && c.planned > 0)
-    .map((c) => {
-      const actual = store.transactions.filter((t) => t.categoryId === c.id).reduce((s, t) => s + t.amount, 0);
-      return { cat: c, actual, remaining: c.planned - actual };
-    })
-    .filter((b) => b.remaining > 0)
-    .slice(0, 2);
-
-  const summaryCards = [
-    { label: 'Income', value: summary.totalIncome, planned: summary.plannedIncome, color: '#34d399', icon: '📈' },
-    { label: 'Expenses', value: summary.totalExpenses, planned: summary.plannedExpenses, color: '#f472b6', icon: '🛍️' },
-    { label: 'Bills', value: summary.totalBills, planned: summary.plannedBills, color: '#818cf8', icon: '🧾' },
-    { label: 'Savings', value: summary.totalSavings, planned: summary.plannedSavings, color: '#34d399', icon: '🏦' },
-    { label: 'Debt', value: summary.totalDebt, planned: summary.plannedDebt, color: '#fb923c', icon: '💳' },
-    { label: 'Cash Flow', value: summary.cashFlow, planned: null, color: summary.cashFlow >= 0 ? '#34d399' : '#ef4444', icon: '💵' },
-  ];
+  // Recent 5 transactions sorted newest first
+  const recentTx = useMemo(
+    () =>
+      [...store.transactions]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5),
+    [store.transactions]
+  );
 
   return (
-    <div className="px-4 pt-6 pb-4 space-y-5">
-      {/* Header */}
-      <motion.div {...stagger(0)} className="flex items-center justify-between">
+    <div
+      className="px-4 pt-5 pb-6 space-y-4 min-h-dvh"
+      style={{ background: '#F8FAFC' }}
+    >
+      {/* ── 1. Header ────────────────────────────────────────────────────── */}
+      <motion.div {...s(0)} className="flex items-center justify-between">
         <div>
-          <p className="text-gray-500 text-sm">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+          <p className="text-xs font-medium" style={{ color: '#9CA3AF' }}>
+            {new Date().toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
-          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
-            {store.settings.name} 👋
+          <h1 className="text-xl font-bold leading-tight mt-0.5" style={{ ...displayFont, color: '#111827' }}>
+            Hey, {store.settings.name || 'there'} 👋
           </h1>
         </div>
         <div className="flex items-center gap-2">
           {streak > 0 && (
-            <Link href="/tracking" className="flex items-center gap-1 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900 rounded-full px-3 py-1">
+            <Link
+              href="/tracking"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full border cursor-pointer"
+              style={{ background: '#FFF7ED', borderColor: '#FED7AA' }}
+            >
               <span className="text-sm">🔥</span>
-              <span className="text-xs font-bold text-orange-600">{streak}</span>
+              <span className="text-xs font-bold" style={{ color: '#C2410C' }}>{streak}</span>
             </Link>
           )}
-          <Link href="/notifications" className="relative w-10 h-10 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center">
-            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
+          <Link
+            href="/notifications"
+            className="relative w-10 h-10 rounded-full flex items-center justify-center cursor-pointer border"
+            style={{ background: '#FFFFFF', borderColor: '#E5E7EB' }}
+          >
+            <Bell size={18} style={{ color: '#6B7280' }} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span
+                className="absolute -top-0.5 -right-0.5 w-4 h-4 text-white text-[9px] font-bold rounded-full flex items-center justify-center"
+                style={{ background: '#EC4899' }}
+              >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -105,182 +125,238 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* Notification permission banner */}
-      <motion.div {...stagger(1)}>
+      {/* ── Banners ──────────────────────────────────────────────────────── */}
+      <motion.div {...s(1)} className="space-y-2">
         <NotificationPermissionBanner />
-      </motion.div>
-
-      {/* Install prompt */}
-      <motion.div {...stagger(1)}>
         <InstallPrompt />
       </motion.div>
 
-      {/* Daily check-in */}
-      <motion.div {...stagger(2)}>
-        <DailyCheckIn amountLeft={summary.amountLeftToSpend} sym={sym} />
-      </motion.div>
-
-      {/* Hero card */}
-      <motion.div {...stagger(3)}>
-        <Card className="gradient-pink text-white p-5">
-          <p className="text-pink-100 text-sm font-medium mb-1">Amount Left to Spend</p>
-          <p className="text-4xl font-extrabold tabular-nums mb-3">
-            {formatCurrency(summary.amountLeftToSpend, sym)}
+      {/* ── 2. Balance hero card ─────────────────────────────────────────── */}
+      <motion.div {...s(2)}>
+        <div
+          className="rounded-3xl p-5 overflow-hidden relative"
+          style={{ background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)' }}
+        >
+          {/* Soft inner glow */}
+          <div
+            className="absolute top-0 right-0 w-40 h-40 rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%)', transform: 'translate(30%, -30%)' }}
+          />
+          <p className="text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            Amount Left to Spend
           </p>
-          <div className="flex items-center justify-between">
+          <div className="flex items-end justify-between">
             <div>
-              <p className="text-pink-100 text-xs">Spending This Period</p>
-              <p className="text-lg font-bold tabular-nums">
-                {formatCurrency(summary.totalExpenses + summary.totalBills, sym)}
-                <span className="text-pink-200 text-sm font-normal ml-1">
-                  of {formatCurrency(summary.plannedExpenses + summary.plannedBills, sym)}
-                </span>
+              <p className="text-4xl font-extrabold tabular-nums text-white leading-none" style={displayFont}>
+                {formatCurrency(summary.amountLeftToSpend, sym)}
+              </p>
+              <p className="text-xs mt-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                {store.settings.budgetPeriod === 'weekly' ? 'This week' :
+                 store.settings.budgetPeriod === 'fortnightly' ? 'This fortnight' : 'This month'}
               </p>
             </div>
-            <ProgressRing value={spendingRatio} size={72} strokeWidth={7} color="white" trackColor="rgba(255,255,255,0.25)">
-              <span className="text-sm font-bold">{Math.round(spendingRatio * 100)}%</span>
+            <ProgressRing
+              value={spendingRatio}
+              size={72}
+              strokeWidth={7}
+              color="rgba(255,255,255,0.95)"
+              trackColor="rgba(255,255,255,0.25)"
+            >
+              <span className="text-xs font-bold text-white">{Math.min(999, Math.round(spendingRatio * 100))}%</span>
             </ProgressRing>
           </div>
-        </Card>
-      </motion.div>
-
-      {/* Upcoming bills */}
-      {upcomingBills.length > 0 && (
-        <motion.div {...stagger(4)}>
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Upcoming Bills</p>
-          <div className="space-y-2">
-            {upcomingBills.map((b) => (
-              <Card key={b.cat.id} className="flex items-center gap-3 p-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-base">
-                  🧾
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{b.cat.name}</p>
-                  <p className="text-xs text-gray-400">{formatCurrency(b.remaining, sym)} remaining</p>
-                </div>
-                <Link href="/budget" className="text-xs text-pink-500 font-semibold">View →</Link>
-              </Card>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Budget Health */}
-      <motion.div {...stagger(5)}>
-        <Card className="flex items-center gap-4 p-4">
-          <ProgressRing value={summary.budgetHealthScore / 100} size={64} strokeWidth={6} color={healthColor}>
-            <span className="text-xs font-bold" style={{ color: healthColor }}>{summary.budgetHealthScore}</span>
-          </ProgressRing>
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Budget Health Score</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{summary.budgetHealthScore}/100</p>
-              <Badge variant={summary.budgetHealthScore >= 80 ? 'good' : summary.budgetHealthScore >= 50 ? 'warning' : 'over'}>
-                {summary.budgetHealthScore >= 80 ? 'Great' : summary.budgetHealthScore >= 50 ? 'Watch Out' : 'Off Track'}
-              </Badge>
-            </div>
-            <p className="text-xs text-gray-400 mt-0.5">
-              {summary.budgetHealthScore >= 80 ? "You're crushing it!" : "Review your spending categories"}
+          <div
+            className="mt-4 pt-3 flex items-center gap-1"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.2)' }}
+          >
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.7)' }}>
+              Spent{' '}
+              <span className="font-semibold text-white">
+                {formatCurrency(summary.totalExpenses + summary.totalBills, sym)}
+              </span>{' '}
+              of{' '}
+              <span className="font-semibold text-white">
+                {formatCurrency(summary.plannedExpenses + summary.plannedBills, sym)}
+              </span>{' '}
+              planned
             </p>
           </div>
-        </Card>
-      </motion.div>
-
-      {/* Goals Savings Bubble */}
-      <motion.div {...stagger(6)}>
-        <GoalSavingsBubble recommendations={goalRecommendations} sym={sym} />
-      </motion.div>
-
-      {/* Summary grid */}
-      <motion.div {...stagger(7)}>
-        <div className="grid grid-cols-3 gap-3">
-          {summaryCards.map((card) => (
-            <Card key={card.label} className="p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-base">{card.icon}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{card.label}</span>
-              </div>
-              <p className="text-sm font-bold tabular-nums" style={{ color: card.color }}>
-                {formatCurrency(card.value, sym)}
-              </p>
-              {card.planned !== null && (
-                <p className="text-xs text-gray-400 tabular-nums">
-                  / {formatCurrency(card.planned, sym)}
-                </p>
-              )}
-            </Card>
-          ))}
         </div>
       </motion.div>
 
-      {/* Allocation chart */}
-      {allocation.length > 0 && (
-        <motion.div {...stagger(8)}>
-          <Card>
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Spending Allocation</p>
-            <AllocationChart data={allocation} symbol={sym} />
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Cash flow chart */}
-      {cashFlowData.length > 0 && (
-        <motion.div {...stagger(9)}>
-          <Card>
-            <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Cash Flow</p>
-            <CashFlowChart data={cashFlowData} symbol={sym} />
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Smart Insights */}
-      {insights.length > 0 && (
-        <motion.div {...stagger(10)} className="space-y-2">
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Smart Insights</p>
-          {insights.slice(0, 4).map((insight) => (
-            <div key={insight.id} className={`card p-3 flex items-start gap-3 ${
-              insight.type === 'warning' ? 'border-amber-200 dark:border-amber-900' :
-              insight.type === 'success' ? 'border-emerald-200 dark:border-emerald-900' :
-              'border-blue-200 dark:border-blue-900'
-            }`}>
-              <span className="text-xl mt-0.5">
-                {insight.type === 'warning' ? '⚠️' : insight.type === 'success' ? '✅' : 'ℹ️'}
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{insight.title}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{insight.body}</p>
-              </div>
+      {/* ── 3. Budget summary row ────────────────────────────────────────── */}
+      <motion.div {...s(3)} className="grid grid-cols-2 gap-3">
+        {/* Income pill */}
+        <div
+          className="rounded-2xl p-4 border"
+          style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#F0FDF4' }}>
+              <TrendingUp size={16} style={{ color: '#22C55E' }} />
             </div>
-          ))}
-          <Link href="/tracking" className="block text-center text-xs text-pink-500 font-medium py-1">
-            View all insights →
-          </Link>
+            <p className="text-xs font-medium" style={{ color: '#6B7280' }}>Income</p>
+          </div>
+          <p className="text-lg font-bold tabular-nums" style={{ ...displayFont, color: '#22C55E' }}>
+            {formatCurrency(summary.totalIncome || summary.plannedIncome, sym)}
+          </p>
+          {summary.plannedIncome > 0 && (
+            <p className="text-[10px] mt-0.5 tabular-nums" style={{ color: '#9CA3AF' }}>
+              planned {formatCurrency(summary.plannedIncome, sym)}
+            </p>
+          )}
+        </div>
+
+        {/* Expenses pill */}
+        <div
+          className="rounded-2xl p-4 border"
+          style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#FFF1F2' }}>
+              <ShoppingBag size={16} style={{ color: '#F43F5E' }} />
+            </div>
+            <p className="text-xs font-medium" style={{ color: '#6B7280' }}>Expenses</p>
+          </div>
+          <p className="text-lg font-bold tabular-nums" style={{ ...displayFont, color: '#F43F5E' }}>
+            {formatCurrency(summary.totalExpenses + summary.totalBills, sym)}
+          </p>
+          {(summary.plannedExpenses + summary.plannedBills) > 0 && (
+            <p className="text-[10px] mt-0.5 tabular-nums" style={{ color: '#9CA3AF' }}>
+              planned {formatCurrency(summary.plannedExpenses + summary.plannedBills, sym)}
+            </p>
+          )}
+        </div>
+      </motion.div>
+
+      {/* ── 4. Daily check-in ────────────────────────────────────────────── */}
+      <motion.div {...s(4)}>
+        <DailyCheckIn amountLeft={summary.amountLeftToSpend} sym={sym} />
+      </motion.div>
+
+      {/* ── 5. Goals savings bubble ──────────────────────────────────────── */}
+      <motion.div {...s(5)}>
+        <GoalSavingsBubble recommendations={goalRecommendations} sym={sym} />
+      </motion.div>
+
+      {/* ── 6. Spending by category ──────────────────────────────────────── */}
+      <motion.div {...s(6)}>
+        <SpendingByCategory summaries={categorySummaries} sym={sym} />
+      </motion.div>
+
+      {/* ── 7. Recent transactions ───────────────────────────────────────── */}
+      {recentTx.length > 0 && (
+        <motion.div {...s(7)}>
+          <div
+            className="rounded-2xl border overflow-hidden"
+            style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
+          >
+            <div className="flex items-center justify-between px-4 pt-4 pb-3">
+              <p className="text-sm font-semibold" style={{ ...displayFont, color: '#111827' }}>
+                Recent Transactions
+              </p>
+              <Link
+                href="/transactions"
+                className="flex items-center gap-0.5 text-xs font-medium cursor-pointer"
+                style={{ color: '#EC4899' }}
+              >
+                View all <ChevronRight size={13} />
+              </Link>
+            </div>
+            <div>
+              {recentTx.map((tx, i) => {
+                const isIncome = tx.type === 'income';
+                const amtColor = isIncome ? '#22C55E' : '#111827';
+                const iconBg = isIncome ? '#F0FDF4' : '#F8FAFC';
+                const IconComp = isIncome ? ArrowUpRight : ArrowDownLeft;
+                const iconColor = isIncome ? '#22C55E' : '#9CA3AF';
+                return (
+                  <div
+                    key={tx.id}
+                    className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors"
+                    style={{
+                      borderTop: i > 0 ? '1px solid #F3F4F6' : undefined,
+                    }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: iconBg }}
+                    >
+                      <IconComp size={16} style={{ color: iconColor }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" style={{ color: '#111827' }}>
+                        {tx.categoryName}
+                      </p>
+                      {tx.notes && (
+                        <p className="text-[11px] truncate" style={{ color: '#9CA3AF' }}>{tx.notes}</p>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-sm font-semibold tabular-nums" style={{ color: amtColor }}>
+                        {isIncome ? '+' : '-'}{fmtAmt(tx.amount, sym)}
+                      </p>
+                      <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{fmtDate(tx.date)}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </motion.div>
       )}
 
-      {/* Quick actions */}
-      <motion.div {...stagger(11)}>
+      {/* ── 8. Quick actions ─────────────────────────────────────────────── */}
+      <motion.div {...s(8)}>
         <div className="grid grid-cols-2 gap-3">
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => setQuickAddOpen(true)}
-            className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow text-left"
+            className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer border transition-colors min-h-[56px]"
+            style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
           >
-            <div className="w-10 h-10 rounded-2xl gradient-pink flex items-center justify-center">
-              <span className="text-xl text-white font-bold">+</span>
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)' }}
+            >
+              <Plus size={18} color="#FFFFFF" strokeWidth={2.5} />
             </div>
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Quick Add</span>
+            <span className="text-sm font-semibold" style={{ ...displayFont, color: '#111827' }}>Quick Add</span>
           </motion.button>
-          <Link href="/goals" className="card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <span className="text-xl">🎯</span>
+          <Link
+            href="/goals"
+            className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer border transition-colors min-h-[56px]"
+            style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
+          >
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#EDE9FE' }}>
+              <Target size={18} style={{ color: '#8B5CF6' }} />
             </div>
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">View Goals</span>
+            <span className="text-sm font-semibold" style={{ ...displayFont, color: '#111827' }}>View Goals</span>
+          </Link>
+          <Link
+            href="/budget"
+            className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer border transition-colors min-h-[56px]"
+            style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
+          >
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#EFF6FF' }}>
+              <BarChart2 size={18} style={{ color: '#60A5FA' }} />
+            </div>
+            <span className="text-sm font-semibold" style={{ ...displayFont, color: '#111827' }}>Budget</span>
+          </Link>
+          <Link
+            href="/tracking"
+            className="rounded-2xl p-4 flex items-center gap-3 cursor-pointer border transition-colors min-h-[56px]"
+            style={{ background: '#FFFFFF', borderColor: '#E5E7EB', boxShadow: '0 1px 6px rgba(0,0,0,0.04)' }}
+          >
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: '#F0FDF4' }}>
+              <TrendingUp size={18} style={{ color: '#22C55E' }} />
+            </div>
+            <span className="text-sm font-semibold" style={{ ...displayFont, color: '#111827' }}>Insights</span>
           </Link>
         </div>
       </motion.div>
 
-      {/* Quick Add Sheet */}
+      {/* ── Quick Add Sheet ───────────────────────────────────────────────── */}
       <QuickAddSheet isOpen={quickAddOpen} onClose={() => setQuickAddOpen(false)} />
     </div>
   );
