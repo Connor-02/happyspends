@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SavingsGoalDraft } from '@/types/budget';
@@ -6,15 +6,17 @@ import { OnboardingStepCard } from './OnboardingStepCard';
 import { generateId } from '@/lib/utils';
 
 const EXAMPLES = [
-  { name: 'Emergency Fund', icon: '🚑' },
-  { name: 'Holiday', icon: '✈️' },
-  { name: 'New Car', icon: '🚗' },
-  { name: 'House Deposit', icon: '🏠' },
-  { name: 'Wedding', icon: '💍' },
-  { name: 'New Laptop', icon: '💻' },
-  { name: 'Education', icon: '🎓' },
-  { name: 'Other Goal', icon: '⭐' },
+  { name: 'Emergency Fund', icon: 'ðŸš‘' },
+  { name: 'Holiday', icon: 'âœˆï¸' },
+  { name: 'New Car', icon: 'ðŸš—' },
+  { name: 'House Deposit', icon: 'ðŸ ' },
+  { name: 'Wedding', icon: 'ðŸ’' },
+  { name: 'New Laptop', icon: 'ðŸ’»' },
+  { name: 'Education', icon: 'ðŸŽ“' },
+  { name: 'Other Goal', icon: 'â­' },
 ];
+
+const inputCls = "w-full px-4 py-3.5 rounded-2xl text-white text-sm focus:outline-none transition-all placeholder:text-white/30 bg-white/10 border border-white/15 focus:border-[#4ADE80]/70";
 
 interface SavingsGoalsStepProps {
   savingsGoals: SavingsGoalDraft[];
@@ -32,21 +34,9 @@ interface FormState {
   targetDate: string;
 }
 
-const emptyForm = (): FormState => ({
-  name: '',
-  targetAmount: '',
-  currentAmount: '0',
-  targetDate: '',
-});
+const emptyForm = (): FormState => ({ name: '', targetAmount: '', currentAmount: '0', targetDate: '' });
 
-export function SavingsGoalsStep({
-  savingsGoals,
-  onChange,
-  currencySymbol,
-  onNext,
-  onBack,
-  onSkip,
-}: SavingsGoalsStepProps) {
+export function SavingsGoalsStep({ savingsGoals, onChange, currencySymbol, onNext, onBack, onSkip }: SavingsGoalsStepProps) {
   const [form, setForm] = useState<FormState | null>(null);
 
   function startAdd(preset?: (typeof EXAMPLES)[number]) {
@@ -62,204 +52,164 @@ export function SavingsGoalsStep({
     const target = parseFloat(form.targetAmount);
     const current = parseFloat(form.currentAmount) || 0;
     if (isNaN(target) || target <= 0) return;
-    onChange([
-      ...savingsGoals,
-      {
-        id: generateId(),
-        name: form.name.trim(),
-        targetAmount: target,
-        currentAmount: current,
-        targetDate: form.targetDate || undefined,
-      },
-    ]);
+    onChange([...savingsGoals, { id: generateId(), name: form.name.trim(), targetAmount: target, currentAmount: current, targetDate: form.targetDate || undefined }]);
     setForm(null);
-  }
-
-  function remove(id: string) {
-    onChange(savingsGoals.filter((g) => g.id !== id));
   }
 
   const canSave = !!form?.name.trim() && parseFloat(form?.targetAmount ?? '') > 0;
 
   return (
     <OnboardingStepCard
-      step={7}
-      totalSteps={10}
-      title="Any savings goals? 🎯"
-      subtitle="What are you saving towards? We'll track your progress as you go."
+      step={6}
+      totalSteps={9}
+      title="Any savings goals? ðŸŽ¯"
+      subtitle="What are you working towards? We'll track your progress automatically."
+      hint="Even small goals are worth tracking â€” watching the bar fill up is motivating!"
       onNext={onNext}
       onBack={onBack}
       onSkip={onSkip}
-      nextLabel={savingsGoals.length > 0 ? 'Continue →' : 'Skip for now'}
+      nextLabel={savingsGoals.length > 0 ? 'Continue â†’' : 'Skip for now'}
     >
       <div className="space-y-4">
-        {/* Example goals grid */}
-        {!form && (
-          <div>
-            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-              Common Goals
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.name}
-                  onClick={() => startAdd(ex)}
-                  className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-left active:scale-95 transition-transform shadow-sm"
-                >
-                  <span className="text-xl">{ex.icon}</span>
-                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">
-                    {ex.name}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Added goals */}
+        <AnimatePresence>
+          {savingsGoals.map((g, i) => {
+            const pct = g.targetAmount > 0 ? Math.min(100, (g.currentAmount / g.targetAmount) * 100) : 0;
+            return (
+              <motion.div
+                key={g.id}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ delay: i * 0.04 }}
+                className="rounded-2xl p-4"
+                style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.2)' }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold text-white">{g.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-white/50">{currencySymbol}{g.targetAmount.toLocaleString()}</p>
+                    <button
+                      onClick={() => onChange(savingsGoals.filter((x) => x.id !== g.id))}
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/10 text-sm leading-none"
+                    >Ã—</button>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#4ADE80,#22C55E)' }} />
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
 
-        {/* Form */}
+        {/* Add form */}
         <AnimatePresence>
           {form && (
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-emerald-300 dark:border-emerald-700 p-4 space-y-3 shadow-sm"
+              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              className="rounded-3xl p-4 space-y-3"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(74,222,128,0.4)' }}
             >
               <div className="flex items-center justify-between">
-                <p className="font-bold text-gray-800 dark:text-white">New Savings Goal</p>
-                <button
-                  onClick={() => setForm(null)}
-                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-lg font-bold leading-none"
-                >
-                  ×
-                </button>
+                <p className="font-bold text-white text-sm">New Savings Goal</p>
+                <button onClick={() => setForm(null)} className="w-7 h-7 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 text-lg leading-none">Ã—</button>
               </div>
-
               <input
                 autoFocus
                 type="text"
-                placeholder="Goal name (e.g. Holiday Fund)"
+                placeholder="e.g. Holiday Fund"
                 value={form.name}
                 onChange={(e) => setField('name', e.target.value)}
-                className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition-colors"
+                className={inputCls}
               />
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">
-                  Target amount (what you want to reach)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
-                    {currencySymbol}
-                  </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min="0"
-                    step="0.01"
-                    placeholder="e.g. 5000"
-                    value={form.targetAmount}
-                    onChange={(e) => setField('targetAmount', e.target.value)}
-                    className="w-full pl-8 pr-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition-colors"
-                  />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-medium text-white/40 mb-1.5">Target amount</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm font-semibold">{currencySymbol}</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step="1"
+                      placeholder="5,000"
+                      value={form.targetAmount}
+                      onChange={(e) => setField('targetAmount', e.target.value)}
+                      className={inputCls + " pl-8"}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-white/40 mb-1.5">Already saved</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm font-semibold">{currencySymbol}</span>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min="0"
+                      step="1"
+                      placeholder="0"
+                      value={form.currentAmount}
+                      onChange={(e) => setField('currentAmount', e.target.value)}
+                      className={inputCls + " pl-8"}
+                    />
+                  </div>
                 </div>
               </div>
-
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">
-                  Already saved (optional — put 0 if starting fresh)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
-                    {currencySymbol}
-                  </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min="0"
-                    step="0.01"
-                    placeholder="0"
-                    value={form.currentAmount}
-                    onChange={(e) => setField('currentAmount', e.target.value)}
-                    className="w-full pl-8 pr-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">
-                  Target date (optional)
-                </label>
+                <label className="block text-[11px] font-medium text-white/40 mb-1.5">Target date (optional)</label>
                 <input
                   type="date"
                   value={form.targetDate}
                   onChange={(e) => setField('targetDate', e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400 transition-colors"
+                  className={inputCls}
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
-
-              <button
+              <motion.button
+                whileTap={{ scale: canSave ? 0.97 : 1 }}
                 onClick={save}
                 disabled={!canSave}
-                className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
-                  canSave
-                    ? 'bg-emerald-500 text-white shadow-sm active:scale-95'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm text-white"
+                style={canSave ? { background: 'linear-gradient(135deg,#4ADE80,#22C55E)', boxShadow: '0 3px 16px rgba(74,222,128,0.3)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}
               >
-                Add Goal ✓
-              </button>
+                âœ“ Add Goal
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Custom add */}
+        {/* Example grid */}
         {!form && (
-          <button
-            onClick={() => startAdd()}
-            className="w-full py-3.5 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold active:scale-95 transition-transform"
-          >
-            + Add Custom Goal
-          </button>
-        )}
-
-        {/* Goals list */}
-        {savingsGoals.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-              Added ({savingsGoals.length})
-            </p>
-            {savingsGoals.map((g) => {
-              const pct = g.targetAmount > 0 ? Math.round((g.currentAmount / g.targetAmount) * 100) : 0;
-              return (
-                <div
-                  key={g.id}
-                  className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3.5 border border-gray-100 dark:border-gray-700 shadow-sm"
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-3">Common Goals</p>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              {EXAMPLES.map((ex) => (
+                <motion.button
+                  key={ex.name}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => startAdd(ex)}
+                  className="flex items-center gap-2.5 px-3.5 py-3 rounded-2xl text-left"
+                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-bold text-gray-800 dark:text-white text-sm">{g.name}</p>
-                    <button
-                      onClick={() => remove(g.id)}
-                      className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-400 font-bold text-lg leading-none active:scale-90 transition-transform"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    {currencySymbol}{g.currentAmount.toFixed(0)} saved of {currencySymbol}{g.targetAmount.toFixed(0)} target
-                    {' '}({pct}%)
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {savingsGoals.length === 0 && !form && (
-          <div className="text-center py-6">
-            <p className="text-gray-400 text-sm">No savings goals yet.</p>
-            <p className="text-gray-400 text-xs mt-1">You can always add goals later — just tap Skip.</p>
-          </div>
+                  <span className="text-xl">{ex.icon}</span>
+                  <span className="text-sm font-semibold text-white/80 truncate">{ex.name}</span>
+                </motion.button>
+              ))}
+            </div>
+            <button
+              onClick={() => startAdd()}
+              className="flex items-center gap-2 text-sm font-semibold"
+              style={{ color: '#4ADE80' }}
+            >
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black" style={{ background: 'rgba(74,222,128,0.2)', color: '#4ADE80' }}>+</span>
+              Add custom goal
+            </button>
+          </motion.div>
         )}
       </div>
     </OnboardingStepCard>

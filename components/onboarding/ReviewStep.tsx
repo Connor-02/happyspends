@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { motion } from 'framer-motion';
 import type { OnboardingState } from '@/types/budget';
 import { computeOnboardingReview, periodLabel } from '@/lib/budgetCalculations';
@@ -19,67 +19,81 @@ export function ReviewStep({ state, onNext, onBack }: ReviewStepProps) {
   const period = periodLabel(state.setup.budgetPeriod);
   const r = computeOnboardingReview(state);
 
-  const rows: { label: string; value: number; color: string; icon: string; note?: string }[] = [
-    { label: 'Income', value: r.totalIncome, color: '#34d399', icon: '📈', note: `per ${period}` },
-    { label: 'Regular Bills', value: r.totalBills, color: '#818cf8', icon: '🧾', note: `per ${period}` },
-    { label: 'Subscriptions', value: r.totalSubscriptions, color: '#60a5fa', icon: '📱', note: `per ${period}` },
-    { label: 'Everyday Spending', value: r.totalSpending, color: '#f472b6', icon: '🛒', note: `per ${period}` },
-    { label: 'Debt Payments', value: r.totalDebt, color: '#fb923c', icon: '💳', note: `per ${period}` },
+  const rows: { label: string; value: number; color: string; icon: string }[] = [
+    { label: 'Income', value: r.totalIncome, color: '#4ADE80', icon: 'ðŸ“ˆ' },
+    { label: 'Regular Bills', value: r.totalBills, color: '#9B6DFF', icon: 'ðŸ§¾' },
+    { label: 'Subscriptions', value: r.totalSubscriptions, color: '#7DD3FC', icon: 'ðŸ“±' },
+    { label: 'Everyday Spending', value: r.totalSpending, color: '#FF5FA2', icon: 'ðŸ›’' },
+    { label: 'Debt Repayments', value: r.totalDebt, color: '#FCD34D', icon: 'ðŸ’³' },
   ].filter((row) => row.value > 0);
 
-  const totalOut = r.totalBills + r.totalSubscriptions + r.totalSpending + r.totalDebt;
+  const counts = [
+    { label: 'Income sources', count: state.incomeSources.length, icon: 'ðŸ“ˆ' },
+    { label: 'Bills tracked', count: state.bills.length, icon: 'ðŸ§¾' },
+    { label: 'Subscriptions', count: state.subscriptions.length, icon: 'ðŸ“±' },
+    { label: 'Savings goals', count: state.savingsGoals.length, icon: 'ðŸŽ¯' },
+    { label: 'Debts tracked', count: state.debtGoals.length, icon: 'ðŸ’³' },
+    { label: 'Budgeted areas', count: state.spendingCategories.filter((c) => c.amount > 0).length, icon: 'ðŸ›’' },
+  ].filter((c) => c.count > 0);
+
+  const healthDescription =
+    r.healthLabel === 'Looks healthy'
+      ? "Great work â€” your budget has breathing room."
+      : r.healthLabel === 'A little tight'
+      ? "You're close to the edge. A few tweaks could help."
+      : "Your outgoings exceed your income â€” let's work on that together.";
 
   return (
     <OnboardingStepCard
       step={9}
-      totalSteps={10}
-      title="Here's your budget 🎉"
-      subtitle="Look good? You can always fine-tune this after setup."
+      totalSteps={9}
+      title="Your budget snapshot ðŸŽ‰"
+      subtitle="Look good? You can fine-tune everything from the Budget screen at any time."
       onNext={onNext}
       onBack={onBack}
-      nextLabel="Create My Budget 🚀"
+      nextLabel="Create My Budget ðŸš€"
     >
       <div className="space-y-4">
         {/* Health badge */}
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.88, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.4, type: 'spring' }}
+          transition={{ duration: 0.45, type: 'spring', bounce: 0.3 }}
           className="rounded-3xl p-5 text-center"
-          style={{ background: `${r.healthColor}18` }}
+          style={{ background: `${r.healthColor}18`, border: `1px solid ${r.healthColor}35` }}
         >
-          <div className="text-4xl mb-2">{r.healthEmoji}</div>
-          <p className="text-2xl font-extrabold" style={{ color: r.healthColor }}>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 250, damping: 18 }}
+            className="text-5xl mb-2.5"
+          >
+            {r.healthEmoji}
+          </motion.div>
+          <p className="text-2xl font-extrabold tracking-tight" style={{ color: r.healthColor }}>
             {r.healthLabel}
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {r.healthLabel === 'Looks healthy'
-              ? "You're off to a great start!"
-              : r.healthLabel === 'A little tight'
-              ? "Not bad — a few small tweaks could help."
-              : "Your outgoings exceed your income. Let's work on that together."}
-          </p>
+          <p className="text-sm mt-1.5 text-white/50">{healthDescription}</p>
         </motion.div>
 
         {/* Summary rows */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm">
+        <div className="rounded-3xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}>
           {rows.map((row, i) => (
             <motion.div
               key={row.label}
-              initial={{ x: 20, opacity: 0 }}
+              initial={{ x: 16, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: i * 0.06 }}
-              className={`flex items-center justify-between px-4 py-3.5 ${
-                i < rows.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
-              }`}
+              transition={{ delay: 0.1 + i * 0.06 }}
+              className="flex items-center justify-between px-4 py-3.5"
+              style={i < rows.length - 1 ? { borderBottom: '1px solid rgba(255,255,255,0.06)' } : {}}
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{row.icon}</span>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base" style={{ background: `${row.color}20` }}>
+                  {row.icon}
+                </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">{row.label}</p>
-                  {row.note && (
-                    <p className="text-xs text-gray-400">{row.note}</p>
-                  )}
+                  <p className="text-sm font-semibold text-white/80">{row.label}</p>
+                  <p className="text-[11px] text-white/35">per {period}</p>
                 </div>
               </div>
               <p className="text-sm font-extrabold tabular-nums" style={{ color: row.color }}>
@@ -89,77 +103,67 @@ export function ReviewStep({ state, onNext, onBack }: ReviewStepProps) {
           ))}
 
           {/* Divider */}
-          <div className="mx-4 border-t-2 border-gray-200 dark:border-gray-600 my-1" />
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.12)', margin: '0 16px' }} />
 
-          {/* Amount left */}
-          <div className="flex items-center justify-between px-4 py-4">
+          {/* Left to spend */}
+          <motion.div
+            initial={{ x: 16, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.1 + rows.length * 0.06 + 0.06 }}
+            className="flex items-center justify-between px-4 py-4"
+          >
             <div className="flex items-center gap-3">
-              <span className="text-lg">💵</span>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base" style={{ background: r.amountLeft >= 0 ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)' }}>
+                ðŸ’µ
+              </div>
               <div>
-                <p className="text-sm font-bold text-gray-900 dark:text-white">Left to Spend</p>
-                <p className="text-xs text-gray-400">per {period}</p>
+                <p className="text-sm font-bold text-white">Left to Spend</p>
+                <p className="text-[11px] text-white/35">per {period}</p>
               </div>
             </div>
-            <p
-              className="text-lg font-extrabold tabular-nums"
-              style={{ color: r.amountLeft >= 0 ? '#34d399' : '#ef4444' }}
-            >
-              {r.amountLeft < 0 ? '−' : ''}{fmt(sym, Math.abs(r.amountLeft))}
+            <p className="text-lg font-extrabold tabular-nums" style={{ color: r.amountLeft >= 0 ? '#4ADE80' : '#ef4444' }}>
+              {r.amountLeft < 0 ? 'âˆ’' : ''}{fmt(sym, Math.abs(r.amountLeft))}
             </p>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Breakdown pills */}
-        {rows.length === 0 && (
-          <div className="text-center py-4 text-gray-400 text-sm">
-            No budget data entered yet. You can add everything after setup!
-          </div>
-        )}
-
-        {rows.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Counts</p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Income sources', count: state.incomeSources.length, icon: '📈' },
-                { label: 'Bills', count: state.bills.length, icon: '🧾' },
-                { label: 'Subscriptions', count: state.subscriptions.length, icon: '📱' },
-                { label: 'Savings goals', count: state.savingsGoals.length, icon: '🎯' },
-                { label: 'Debts tracked', count: state.debtGoals.length, icon: '💳' },
-                {
-                  label: 'Spending budgeted',
-                  count: state.spendingCategories.filter((c) => c.amount > 0).length,
-                  icon: '🛒',
-                },
-              ].map((item) => (
+        {/* Counts grid */}
+        {counts.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2.5">What you've set up</p>
+            <div className="grid grid-cols-3 gap-2">
+              {counts.map((c) => (
                 <div
-                  key={item.label}
-                  className="bg-white dark:bg-gray-800 rounded-2xl px-3.5 py-3 border border-gray-100 dark:border-gray-700 flex items-center gap-2 shadow-sm"
+                  key={c.label}
+                  className="rounded-2xl p-3 text-center"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                  <span className="text-base">{item.icon}</span>
-                  <div>
-                    <p className="text-xs text-gray-400">{item.label}</p>
-                    <p className="text-sm font-extrabold text-gray-800 dark:text-white">{item.count}</p>
-                  </div>
+                  <div className="text-xl mb-1">{c.icon}</div>
+                  <p className="text-lg font-extrabold text-white">{c.count}</p>
+                  <p className="text-[10px] text-white/35 leading-tight mt-0.5">{c.label}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Reassurance note */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl px-4 py-3">
-          <p className="text-xs text-blue-600 dark:text-blue-300 font-medium">
-            💡 Don&apos;t stress if the numbers aren&apos;t perfect — your budget is a living document. You can
-            edit everything from the Budget and Goals screens anytime.
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="rounded-2xl px-4 py-3"
+          style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)' }}
+        >
+          <p className="text-xs font-medium" style={{ color: 'rgba(167,157,255,0.85)' }}>
+            ðŸ’¡ Your budget is a living document â€” edit everything from the Budget and Goals screens anytime.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Income breakdown if no income entered */}
-        {r.totalIncome === 0 && totalOut > 0 && (
-          <div className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl px-4 py-3">
-            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">
-              ⚠️ You haven&apos;t added any income yet. Add it after setup from the Budget screen.
+        {r.totalIncome === 0 && (
+          <div className="rounded-2xl px-4 py-3" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)' }}>
+            <p className="text-xs font-medium" style={{ color: 'rgba(252,211,77,0.85)' }}>
+              âš ï¸ No income added yet â€” you can add it from the Budget screen after setup.
             </p>
           </div>
         )}

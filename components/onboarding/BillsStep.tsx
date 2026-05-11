@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RecurringBill, Frequency } from '@/types/budget';
@@ -7,16 +7,15 @@ import { generateId } from '@/lib/utils';
 import { freqLabel } from '@/lib/budgetCalculations';
 
 const PRESETS = [
-  { name: 'Rent / Mortgage', icon: '🏠', freq: 'monthly' as Frequency },
-  { name: 'Electricity', icon: '⚡', freq: 'monthly' as Frequency },
-  { name: 'Water', icon: '💧', freq: 'monthly' as Frequency },
-  { name: 'Internet', icon: '🌐', freq: 'monthly' as Frequency },
-  { name: 'Phone Plan', icon: '📱', freq: 'monthly' as Frequency },
-  { name: 'Insurance', icon: '🛡️', freq: 'monthly' as Frequency },
-  { name: 'Car Repayment', icon: '🚗', freq: 'monthly' as Frequency },
-  { name: 'Loan Repayment', icon: '💳', freq: 'monthly' as Frequency },
-  { name: 'Childcare', icon: '👶', freq: 'monthly' as Frequency },
-  { name: 'Other Bill', icon: '📄', freq: 'monthly' as Frequency },
+  { name: 'Rent / Mortgage', icon: 'ðŸ ', freq: 'monthly' as Frequency },
+  { name: 'Electricity', icon: 'âš¡', freq: 'monthly' as Frequency },
+  { name: 'Water', icon: 'ðŸ’§', freq: 'monthly' as Frequency },
+  { name: 'Internet', icon: 'ðŸŒ', freq: 'monthly' as Frequency },
+  { name: 'Phone Plan', icon: 'ðŸ“±', freq: 'monthly' as Frequency },
+  { name: 'Insurance', icon: 'ðŸ›¡ï¸', freq: 'monthly' as Frequency },
+  { name: 'Car Repayment', icon: 'ðŸš—', freq: 'monthly' as Frequency },
+  { name: 'Childcare', icon: 'ðŸ‘¶', freq: 'monthly' as Frequency },
+  { name: 'Other Bill', icon: 'ðŸ“„', freq: 'monthly' as Frequency },
 ];
 
 const FREQS: { value: Frequency; label: string }[] = [
@@ -25,6 +24,8 @@ const FREQS: { value: Frequency; label: string }[] = [
   { value: 'monthly', label: 'Monthly' },
   { value: 'yearly', label: 'Yearly' },
 ];
+
+const inputCls = "w-full px-4 py-3.5 rounded-2xl text-white text-sm focus:outline-none transition-all placeholder:text-white/30 bg-white/10 border border-white/15 focus:border-[#9B6DFF]/70";
 
 interface BillsStepProps {
   bills: RecurringBill[];
@@ -42,12 +43,7 @@ interface FormState {
   dueDate: string;
 }
 
-const emptyForm = (): FormState => ({
-  name: '',
-  amount: '',
-  frequency: 'monthly',
-  dueDate: '',
-});
+const emptyForm = (): FormState => ({ name: '', amount: '', frequency: 'monthly', dueDate: '' });
 
 export function BillsStep({ bills, onChange, currencySymbol, onNext, onBack, onSkip }: BillsStepProps) {
   const [form, setForm] = useState<FormState | null>(null);
@@ -64,185 +60,146 @@ export function BillsStep({ bills, onChange, currencySymbol, onNext, onBack, onS
     if (!form?.name.trim() || !form.amount) return;
     const amount = parseFloat(form.amount);
     if (isNaN(amount) || amount <= 0) return;
-    onChange([
-      ...bills,
-      {
-        id: generateId(),
-        name: form.name.trim(),
-        amount,
-        frequency: form.frequency,
-        dueDate: form.dueDate || undefined,
-      },
-    ]);
+    onChange([...bills, { id: generateId(), name: form.name.trim(), amount, frequency: form.frequency, dueDate: form.dueDate || undefined }]);
     setForm(null);
-  }
-
-  function remove(id: string) {
-    onChange(bills.filter((b) => b.id !== id));
   }
 
   const canSave = !!form?.name.trim() && parseFloat(form?.amount ?? '') > 0;
 
   return (
     <OnboardingStepCard
-      step={4}
-      totalSteps={10}
+      step={3}
+      totalSteps={9}
       title="Your regular bills"
-      subtitle="Things you pay every week, fortnight, or month — rent, power, phone, etc."
+      subtitle="Rent, electricity, phone â€” things you pay every period."
+      hint="We'll track these automatically so they never catch you off guard."
       onNext={onNext}
       onBack={onBack}
       onSkip={onSkip}
-      nextLabel={bills.length > 0 ? 'Continue →' : 'Skip for now'}
+      nextLabel={bills.length > 0 ? 'Continue â†’' : 'Skip for now'}
     >
       <div className="space-y-4">
-        {/* Quick-add chips */}
-        {!form && (
-          <div>
-            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-              Common Bills
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {PRESETS.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => startAdd(p)}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 active:scale-95 transition-transform shadow-sm"
-                >
-                  <span>{p.icon}</span>
-                  <span>{p.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Added bills */}
+        <AnimatePresence>
+          {bills.map((b, i) => (
+            <motion.div
+              key={b.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ delay: i * 0.04 }}
+              className="flex items-center gap-3 rounded-2xl px-4 py-3"
+              style={{ background: 'rgba(155,109,255,0.1)', border: '1px solid rgba(155,109,255,0.25)' }}
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(155,109,255,0.2)' }}>
+                <span className="text-base">ðŸ§¾</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{b.name}</p>
+                <p className="text-xs text-white/50">{currencySymbol}{b.amount.toLocaleString()} Â· {freqLabel(b.frequency)}</p>
+              </div>
+              <button
+                onClick={() => onChange(bills.filter((x) => x.id !== b.id))}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/10 transition-all text-lg leading-none flex-shrink-0"
+              >Ã—</button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
-        {/* Inline form */}
+        {/* Add form */}
         <AnimatePresence>
           {form && (
             <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-purple-300 dark:border-purple-700 p-4 space-y-3 shadow-sm"
+              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              className="rounded-3xl p-4 space-y-3"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(155,109,255,0.4)' }}
             >
               <div className="flex items-center justify-between">
-                <p className="font-bold text-gray-800 dark:text-white">New Bill</p>
-                <button
-                  onClick={() => setForm(null)}
-                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-lg font-bold leading-none"
-                >
-                  ×
-                </button>
+                <p className="font-bold text-white text-sm">New Bill</p>
+                <button onClick={() => setForm(null)} className="w-7 h-7 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 text-lg leading-none">Ã—</button>
               </div>
-
               <input
                 autoFocus
                 type="text"
-                placeholder="Bill name (e.g. Origin Energy)"
+                placeholder="e.g. Origin Energy"
                 value={form.name}
                 onChange={(e) => setField('name', e.target.value)}
-                className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 transition-colors"
+                className={inputCls}
               />
-
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
-                    {currencySymbol}
-                  </span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 font-semibold text-sm">{currencySymbol}</span>
                   <input
                     type="number"
                     inputMode="decimal"
                     min="0"
                     step="0.01"
-                    placeholder="Amount"
+                    placeholder="0.00"
                     value={form.amount}
                     onChange={(e) => setField('amount', e.target.value)}
-                    className="w-full pl-8 pr-3 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 transition-colors"
+                    className={inputCls + " pl-8"}
                   />
                 </div>
                 <select
                   value={form.frequency}
                   onChange={(e) => setField('frequency', e.target.value as Frequency)}
-                  className="flex-1 px-3 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 transition-colors text-sm"
+                  className="flex-1 px-3 py-3.5 rounded-2xl text-white text-sm focus:outline-none border border-white/15 bg-white/10"
+                  style={{ colorScheme: 'dark' }}
                 >
-                  {FREQS.map((f) => (
-                    <option key={f.value} value={f.value}>
-                      {f.label}
-                    </option>
-                  ))}
+                  {FREQS.map((f) => <option key={f.value} value={f.value} className="bg-[#1A0E3A]">{f.label}</option>)}
                 </select>
               </div>
-
               <div>
-                <label className="block text-xs font-semibold text-gray-400 mb-1.5">
-                  Next due date (optional)
-                </label>
+                <label className="block text-[11px] font-medium text-white/40 mb-1.5">Next due date (optional)</label>
                 <input
                   type="date"
                   value={form.dueDate}
                   onChange={(e) => setField('dueDate', e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:border-purple-400 transition-colors"
+                  className={inputCls}
+                  style={{ colorScheme: 'dark' }}
                 />
               </div>
-
-              <button
+              <motion.button
+                whileTap={{ scale: canSave ? 0.97 : 1 }}
                 onClick={save}
                 disabled={!canSave}
-                className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
-                  canSave
-                    ? 'bg-purple-500 text-white shadow-sm active:scale-95'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm text-white"
+                style={canSave ? { background: 'linear-gradient(135deg,#9B6DFF,#6C63FF)', boxShadow: '0 3px 16px rgba(155,109,255,0.35)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}
               >
-                Add Bill ✓
-              </button>
+                âœ“ Add Bill
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Custom add */}
+        {/* Preset chips */}
         {!form && (
-          <button
-            onClick={() => startAdd()}
-            className="w-full py-3.5 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 text-sm font-semibold active:scale-95 transition-transform"
-          >
-            + Add Custom Bill
-          </button>
-        )}
-
-        {/* Bill list */}
-        {bills.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-              Added ({bills.length})
-            </p>
-            {bills.map((b) => (
-              <div
-                key={b.id}
-                className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-2xl px-4 py-3.5 border border-gray-100 dark:border-gray-700 shadow-sm"
-              >
-                <div>
-                  <p className="font-bold text-gray-800 dark:text-white text-sm">{b.name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {currencySymbol}{b.amount.toFixed(2)} · {freqLabel(b.frequency)}
-                  </p>
-                </div>
-                <button
-                  onClick={() => remove(b.id)}
-                  className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-400 font-bold text-lg leading-none active:scale-90 transition-transform"
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-3">Common Bills</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {PRESETS.map((p) => (
+                <motion.button
+                  key={p.name}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => startAdd(p)}
+                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-full text-sm font-semibold text-white/80"
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
                 >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {bills.length === 0 && !form && (
-          <div className="text-center py-6">
-            <p className="text-gray-400 text-sm">No bills added yet.</p>
-            <p className="text-gray-400 text-xs mt-1">Tap a quick-add button or skip this step.</p>
-          </div>
+                  <span>{p.icon}</span><span>{p.name}</span>
+                </motion.button>
+              ))}
+            </div>
+            <button
+              onClick={() => startAdd()}
+              className="flex items-center gap-2 text-sm font-semibold"
+              style={{ color: '#9B6DFF' }}
+            >
+              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black" style={{ background: 'rgba(155,109,255,0.2)', color: '#9B6DFF' }}>+</span>
+              Add another bill
+            </button>
+          </motion.div>
         )}
       </div>
     </OnboardingStepCard>

@@ -1,11 +1,12 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { SpendingCategoryItem } from '@/types/budget';
 import type { OnboardingBudgetPeriod } from '@/types/budget';
 import { OnboardingStepCard } from './OnboardingStepCard';
 import { periodLabel } from '@/lib/budgetCalculations';
 
-const PRESET_AMOUNTS = [25, 50, 100, 200];
+const PRESET_AMOUNTS = [50, 100, 200, 300];
 
 interface SpendingStepProps {
   spendingCategories: SpendingCategoryItem[];
@@ -16,14 +17,7 @@ interface SpendingStepProps {
   onBack: () => void;
 }
 
-export function SpendingStep({
-  spendingCategories,
-  onChange,
-  currencySymbol,
-  budgetPeriod,
-  onNext,
-  onBack,
-}: SpendingStepProps) {
+export function SpendingStep({ spendingCategories, onChange, currencySymbol, budgetPeriod, onNext, onBack }: SpendingStepProps) {
   const [customEdit, setCustomEdit] = useState<string | null>(null);
   const [customValue, setCustomValue] = useState('');
 
@@ -38,9 +32,7 @@ export function SpendingStep({
 
   function saveCustom(id: string) {
     const val = parseFloat(customValue);
-    if (!isNaN(val) && val >= 0) {
-      setAmount(id, val);
-    }
+    if (!isNaN(val) && val >= 0) setAmount(id, val);
     setCustomEdit(null);
     setCustomValue('');
   }
@@ -50,119 +42,144 @@ export function SpendingStep({
 
   return (
     <OnboardingStepCard
-      step={6}
-      totalSteps={10}
+      step={5}
+      totalSteps={9}
       title="Everyday spending"
-      subtitle={`How much do you roughly spend per ${period} in each area? Tap a quick amount or enter your own.`}
+      subtitle={`How much do you roughly spend per ${period} in each area?`}
+      hint="Your dashboard will update automatically as you add transactions. Just give us rough estimates for now."
       onNext={onNext}
       onBack={onBack}
-      nextLabel="Continue →"
+      nextLabel="Continue â†’"
     >
       <div className="space-y-4">
+        {/* Running total */}
         {totalSet > 0 && (
-          <div className="bg-pink-50 dark:bg-pink-900/20 rounded-2xl px-4 py-3 flex items-center justify-between">
-            <p className="text-sm font-semibold text-pink-700 dark:text-pink-300">
-              Total estimated spending
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between rounded-2xl px-4 py-3"
+            style={{ background: 'rgba(255,95,162,0.12)', border: '1px solid rgba(255,95,162,0.25)' }}
+          >
+            <p className="text-sm font-semibold text-white/80">Total estimated spending</p>
+            <p className="text-sm font-extrabold tabular-nums" style={{ color: '#FF5FA2' }}>
+              {currencySymbol}{totalSet.toLocaleString('en-AU', { minimumFractionDigits: 0 })}<span className="text-white/40 font-normal text-xs">/{period[0]}</span>
             </p>
-            <p className="text-sm font-extrabold text-pink-600 dark:text-pink-400 tabular-nums">
-              {currencySymbol}{totalSet.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/{period}
-            </p>
-          </div>
+          </motion.div>
         )}
 
-        <div className="space-y-3">
-          {spendingCategories.map((cat) => (
-            <div
+        {/* Category cards */}
+        <div className="space-y-2.5">
+          {spendingCategories.map((cat, i) => (
+            <motion.div
               key={cat.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+              className="rounded-2xl p-4"
+              style={
+                cat.amount > 0
+                  ? { background: 'rgba(255,95,162,0.08)', border: '1px solid rgba(255,95,162,0.2)' }
+                  : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }
+              }
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xl">{cat.icon}</span>
-                  <span className="font-bold text-sm text-gray-800 dark:text-white">{cat.name}</span>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: cat.amount > 0 ? 'rgba(255,95,162,0.2)' : 'rgba(255,255,255,0.08)' }}>
+                    <span className="text-base">{cat.icon}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-white">{cat.name}</span>
                 </div>
                 {cat.amount > 0 && (
-                  <span className="text-sm font-extrabold text-pink-600 dark:text-pink-400 tabular-nums">
+                  <span className="text-sm font-extrabold tabular-nums" style={{ color: '#FF5FA2' }}>
                     {currencySymbol}{cat.amount}/{period[0]}
                   </span>
                 )}
               </div>
 
-              {customEdit === cat.id ? (
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">
-                      {currencySymbol}
-                    </span>
-                    <input
-                      autoFocus
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      step="1"
-                      placeholder="Enter amount"
-                      value={customValue}
-                      onChange={(e) => setCustomValue(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && saveCustom(cat.id)}
-                      className="w-full pl-7 pr-3 py-2.5 rounded-xl border-2 border-pink-400 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none text-sm"
-                    />
-                  </div>
-                  <button
-                    onClick={() => saveCustom(cat.id)}
-                    className="px-4 py-2.5 rounded-xl bg-pink-500 text-white font-bold text-sm active:scale-95 transition-transform"
+              <AnimatePresence mode="wait">
+                {customEdit === cat.id ? (
+                  <motion.div
+                    key="custom"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex gap-2"
                   >
-                    ✓
-                  </button>
-                  <button
-                    onClick={() => { setCustomEdit(null); setCustomValue(''); }}
-                    className="px-3 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-500 font-bold text-sm"
-                  >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <div className="flex gap-2 flex-wrap">
-                  {PRESET_AMOUNTS.map((amt) => (
+                    <div className="relative flex-1">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm font-semibold">{currencySymbol}</span>
+                      <input
+                        autoFocus
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        step="1"
+                        placeholder="Amount"
+                        value={customValue}
+                        onChange={(e) => setCustomValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && saveCustom(cat.id)}
+                        className="w-full pl-8 pr-3 py-2.5 rounded-xl text-white text-sm focus:outline-none transition-all bg-white/10 border border-[#FF5FA2]/50 placeholder:text-white/30"
+                      />
+                    </div>
                     <button
-                      key={amt}
-                      onClick={() => setAmount(cat.id, amt)}
-                      className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
-                        cat.amount === amt
-                          ? 'bg-pink-500 text-white shadow-sm'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                      }`}
-                    >
-                      {currencySymbol}{amt}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => openCustom(cat)}
-                    className={`px-3.5 py-2 rounded-full text-sm font-bold transition-all active:scale-95 ${
-                      cat.amount > 0 && !PRESET_AMOUNTS.includes(cat.amount)
-                        ? 'bg-pink-500 text-white shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    {cat.amount > 0 && !PRESET_AMOUNTS.includes(cat.amount)
-                      ? `${currencySymbol}${cat.amount}`
-                      : 'Custom'}
-                  </button>
-                  {cat.amount > 0 && (
+                      onClick={() => saveCustom(cat.id)}
+                      className="px-4 py-2.5 rounded-xl font-bold text-sm text-white"
+                      style={{ background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)' }}
+                    >âœ“</button>
                     <button
-                      onClick={() => setAmount(cat.id, 0)}
-                      className="px-3 py-2 rounded-full text-xs font-semibold bg-gray-50 dark:bg-gray-700 text-gray-400 active:scale-95 transition-transform"
+                      onClick={() => { setCustomEdit(null); setCustomValue(''); }}
+                      className="px-3 py-2.5 rounded-xl text-white/50 text-sm font-bold"
+                      style={{ background: 'rgba(255,255,255,0.08)' }}
+                    >Ã—</button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="chips"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex gap-1.5 flex-wrap"
+                  >
+                    {PRESET_AMOUNTS.map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => setAmount(cat.id, cat.amount === amt ? 0 : amt)}
+                        className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                        style={
+                          cat.amount === amt
+                            ? { background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)', color: 'white' }
+                            : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }
+                        }
+                      >
+                        {currencySymbol}{amt}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => openCustom(cat)}
+                      className="px-3 py-1.5 rounded-full text-xs font-bold transition-all"
+                      style={
+                        cat.amount > 0 && !PRESET_AMOUNTS.includes(cat.amount)
+                          ? { background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)', color: 'white' }
+                          : { background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.1)' }
+                      }
                     >
-                      Clear
+                      {cat.amount > 0 && !PRESET_AMOUNTS.includes(cat.amount) ? `${currencySymbol}${cat.amount}` : 'Custom'}
                     </button>
-                  )}
-                </div>
-              )}
-            </div>
+                    {cat.amount > 0 && (
+                      <button
+                        onClick={() => setAmount(cat.id, 0)}
+                        className="px-2.5 py-1.5 rounded-full text-[10px] font-semibold text-white/30"
+                        style={{ background: 'rgba(255,255,255,0.05)' }}
+                      >Clear</button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))}
         </div>
 
-        <p className="text-xs text-gray-400 text-center px-4">
-          Don&apos;t worry about being exact — you can update these anytime. Leave categories at $0 to skip them.
+        <p className="text-xs text-white/30 text-center px-4">
+          Estimates only â€” you can update these anytime from the Budget screen.
         </p>
       </div>
     </OnboardingStepCard>
