@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clearAllData } from '@/lib/store';
 import {
   loadPremiumStore,
   saveNotificationPreferences,
@@ -22,10 +24,17 @@ function stagger(i: number) {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [prefs, setPrefs] = useState<NotificationPreference | null>(null);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [saved, setSaved] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const handleReset = () => {
+    clearAllData();
+    router.replace('/onboarding');
+  };
 
   useEffect(() => {
     const store = loadPremiumStore();
@@ -213,8 +222,74 @@ export default function SettingsPage() {
         </Card>
       </motion.div>
 
+      {/* Danger zone */}
+      <motion.div {...stagger(7)}>
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Danger Zone</p>
+        <Card className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+              <span className="text-base">🗑️</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">Reset Account</p>
+              <p className="text-xs text-gray-400 mt-0.5">Clear all data and restart the setup wizard from scratch.</p>
+            </div>
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              className="text-xs font-semibold text-red-500 border border-red-200 dark:border-red-900 rounded-lg px-3 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex-shrink-0"
+            >
+              Reset
+            </button>
+          </div>
+        </Card>
+      </motion.div>
+
       {/* Save confirmation */}
       <AnimatedSavedBanner visible={saved} />
+
+      {/* Reset confirmation modal */}
+      <AnimatePresence>
+        {showResetConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm px-4 pb-8"
+            onClick={() => setShowResetConfirm(false)}
+          >
+            <motion.div
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-2xl"
+            >
+              <div className="text-center mb-5">
+                <div className="text-4xl mb-3">⚠️</div>
+                <h2 className="text-lg font-extrabold text-gray-900 dark:text-white">Reset your account?</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">
+                  This will permanently delete all your budget data, transactions, goals, and settings. This cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowResetConfirm(false)}
+                  className="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReset}
+                  className="flex-1 py-3 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors"
+                >
+                  Yes, Reset
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

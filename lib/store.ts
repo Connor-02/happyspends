@@ -163,6 +163,14 @@ export function resetStore(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
+// ─── Full account wipe (all localStorage keys) ───────────────────────────────
+export function clearAllData(): void {
+  if (isServer()) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem('happyspends_premium');
+  localStorage.removeItem('happyspends_onboarding');
+}
+
 export function exportJSON(): string {
   return JSON.stringify(loadStore(), null, 2);
 }
