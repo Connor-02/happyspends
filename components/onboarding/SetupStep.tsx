@@ -1,31 +1,31 @@
 ﻿'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Wallet, DollarSign, Calendar, ChevronDown, PlusCircle, Check } from 'lucide-react';
 import type { BudgetSetup, OnboardingBudgetPeriod } from '@/types/budget';
 import { OnboardingStepCard } from './OnboardingStepCard';
 
 const CURRENCIES = [
-  { code: 'AUD', symbol: '$', flag: 'ðŸ‡¦ðŸ‡º', label: 'Australian Dollar' },
-  { code: 'USD', symbol: '$', flag: 'ðŸ‡ºðŸ‡¸', label: 'US Dollar' },
-  { code: 'NZD', symbol: '$', flag: 'ðŸ‡³ðŸ‡¿', label: 'New Zealand Dollar' },
-  { code: 'GBP', symbol: 'Â£', flag: 'ðŸ‡¬ðŸ‡§', label: 'British Pound' },
-  { code: 'EUR', symbol: 'â‚¬', flag: 'ðŸ‡ªðŸ‡º', label: 'Euro' },
-  { code: 'CAD', symbol: '$', flag: 'ðŸ‡¨ðŸ‡¦', label: 'Canadian Dollar' },
-  { code: 'SGD', symbol: '$', flag: 'ðŸ‡¸ðŸ‡¬', label: 'Singapore Dollar' },
-  { code: 'JPY', symbol: 'Â¥', flag: 'ðŸ‡¯ðŸ‡µ', label: 'Japanese Yen' },
-  { code: 'INR', symbol: 'â‚¹', flag: 'ðŸ‡®ðŸ‡³', label: 'Indian Rupee' },
-  { code: 'BRL', symbol: 'R$', flag: 'ðŸ‡§ðŸ‡·', label: 'Brazilian Real' },
+  { code: 'AUD', symbol: '$', label: 'Australian Dollar' },
+  { code: 'USD', symbol: '$', label: 'US Dollar' },
+  { code: 'NZD', symbol: '$', label: 'New Zealand Dollar' },
+  { code: 'GBP', symbol: '£', label: 'British Pound' },
+  { code: 'EUR', symbol: '€', label: 'Euro' },
+  { code: 'CAD', symbol: '$', label: 'Canadian Dollar' },
+  { code: 'SGD', symbol: '$', label: 'Singapore Dollar' },
+  { code: 'JPY', symbol: '¥', label: 'Japanese Yen' },
+  { code: 'INR', symbol: '₹', label: 'Indian Rupee' },
+  { code: 'BRL', symbol: 'R$', label: 'Brazilian Real' },
 ];
 
-const PERIODS: { value: OnboardingBudgetPeriod; label: string; desc: string; icon: string }[] = [
-  { value: 'weekly', label: 'Weekly', desc: 'Every 7 days', icon: '7' },
-  { value: 'fortnightly', label: 'Fortnightly', desc: 'Every 2 weeks', icon: '14' },
-  { value: 'monthly', label: 'Monthly', desc: 'Once a month', icon: '30' },
+const PERIODS: { value: OnboardingBudgetPeriod; label: string; desc: string }[] = [
+  { value: 'weekly', label: 'Weekly', desc: 'Every 7 days' },
+  { value: 'fortnightly', label: 'Fortnightly', desc: 'Every 2 weeks' },
+  { value: 'monthly', label: 'Monthly', desc: 'Once a month' },
 ];
 
-// Styled input class
-const inputCls = "w-full px-4 py-4 rounded-2xl text-white text-base focus:outline-none transition-all placeholder:text-white/30"
-  + " bg-white/10 border border-white/15 focus:border-[#FF5FA2]/70 focus:bg-white/[0.12]";
+const inputCls =
+  'w-full px-4 py-3.5 rounded-2xl text-sm focus:outline-none transition-all placeholder:text-gray-400 bg-white border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50';
 
 interface SetupStepProps {
   setup: BudgetSetup;
@@ -54,7 +54,7 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
       step={1}
       totalSteps={9}
       title="Let's get the basics"
-      subtitle="Quick setup â€” takes less than a minute."
+      subtitle="Quick setup — takes less than a minute."
       hint="We use this to personalise your dashboard and calculate your budget accurately."
       onNext={onNext}
       onBack={onBack}
@@ -63,7 +63,8 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
       <div className="space-y-5">
         {/* Name */}
         <div>
-          <label className="block text-xs font-semibold text-white/55 uppercase tracking-wider mb-2">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>
+            <Wallet className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
             What should we call you?
           </label>
           <input
@@ -73,29 +74,27 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
             value={setup.name}
             onChange={(e) => set('name', e.target.value)}
             className={inputCls}
+            style={{ color: '#111827' }}
           />
         </div>
 
         {/* Currency */}
         <div>
-          <label className="block text-xs font-semibold text-white/55 uppercase tracking-wider mb-2">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>
+            <DollarSign className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
             Your currency
           </label>
           <button
             onClick={() => setShowCurrencyPicker(!showCurrencyPicker)}
-            className="w-full px-4 py-4 rounded-2xl flex items-center justify-between text-left transition-all"
-            style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.15)' }}
+            className="w-full px-4 py-3.5 rounded-2xl flex items-center justify-between text-left transition-all bg-white border border-gray-200 hover:border-pink-300"
           >
-            <span className="flex items-center gap-3">
-              <span className="text-xl">{selected.flag}</span>
-              <span className="text-white font-semibold">{selected.label}</span>
-              <span className="text-white/40 text-sm">{selected.symbol}</span>
+            <span className="flex items-center gap-2.5">
+              <span className="text-sm font-bold" style={{ color: '#6B7280' }}>{selected.code}</span>
+              <span className="text-sm font-semibold" style={{ color: '#111827' }}>{selected.label}</span>
+              <span className="text-xs px-1.5 py-0.5 rounded-lg font-mono" style={{ background: '#F3F4F6', color: '#6B7280' }}>{selected.symbol}</span>
             </span>
-            <motion.span
-              animate={{ rotate: showCurrencyPicker ? 180 : 0 }}
-              className="text-white/40 text-lg"
-            >
-              â–¾
+            <motion.span animate={{ rotate: showCurrencyPicker ? 180 : 0 }}>
+              <ChevronDown className="w-4 h-4" style={{ color: '#9CA3AF' }} />
             </motion.span>
           </button>
 
@@ -105,20 +104,21 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className="overflow-hidden mt-1 rounded-2xl"
-                style={{ background: 'rgba(26,14,58,0.95)', border: '1px solid rgba(255,255,255,0.12)' }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden mt-1 rounded-2xl bg-white border border-gray-200 shadow-lg"
               >
                 {CURRENCIES.map((c) => (
                   <button
                     key={c.code}
                     onClick={() => handleCurrencyChange(c.code)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                   >
-                    <span className="text-lg">{c.flag}</span>
-                    <span className="text-white/90 text-sm font-medium flex-1">{c.label}</span>
-                    <span className="text-white/40 text-xs">{c.code}</span>
-                    {c.code === setup.currency && <span className="text-[#FF5FA2] text-sm">âœ“</span>}
+                    <span className="text-xs font-bold w-8" style={{ color: '#9CA3AF' }}>{c.code}</span>
+                    <span className="text-sm font-medium flex-1" style={{ color: '#374151' }}>{c.label}</span>
+                    <span className="text-xs font-mono" style={{ color: '#6B7280' }}>{c.symbol}</span>
+                    {c.code === setup.currency && (
+                      <Check className="w-4 h-4" style={{ color: '#EC4899' }} />
+                    )}
                   </button>
                 ))}
               </motion.div>
@@ -128,7 +128,8 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
 
         {/* Budget period */}
         <div>
-          <label className="block text-xs font-semibold text-white/55 uppercase tracking-wider mb-2">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>
+            <Calendar className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
             Budget cycle
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -137,20 +138,28 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
               return (
                 <motion.button
                   key={p.value}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => set('budgetPeriod', p.value)}
-                  className="py-4 px-2 rounded-2xl text-center transition-all"
+                  className="py-3.5 px-2 rounded-2xl text-center transition-all"
                   style={
                     active
-                      ? { background: 'linear-gradient(135deg,rgba(255,95,162,0.25) 0%,rgba(155,109,255,0.25) 100%)', border: '1.5px solid rgba(255,95,162,0.55)' }
-                      : { background: 'rgba(255,255,255,0.07)', border: '1.5px solid rgba(255,255,255,0.12)' }
+                      ? {
+                          background: 'linear-gradient(135deg, rgba(236,72,153,0.08) 0%, rgba(139,92,246,0.08) 100%)',
+                          border: '1.5px solid #EC4899',
+                        }
+                      : {
+                          background: '#FFFFFF',
+                          border: '1.5px solid #E5E7EB',
+                        }
                   }
                 >
-                  <p className="text-2xl font-black mb-0.5" style={active ? { background: 'linear-gradient(90deg,#FF5FA2,#9B6DFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } : { color: 'rgba(255,255,255,0.7)' }}>
-                    {p.icon}
+                  <p
+                    className="text-xs font-bold mb-0.5"
+                    style={active ? { color: '#EC4899' } : { color: '#374151' }}
+                  >
+                    {p.label}
                   </p>
-                  <p className={`text-xs font-bold ${active ? 'text-white' : 'text-white/60'}`}>{p.label}</p>
-                  <p className="text-[10px] text-white/35 mt-0.5">{p.desc}</p>
+                  <p className="text-[10px]" style={{ color: '#9CA3AF' }}>{p.desc}</p>
                 </motion.button>
               );
             })}
@@ -159,7 +168,8 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
 
         {/* Start date */}
         <div>
-          <label className="block text-xs font-semibold text-white/55 uppercase tracking-wider mb-2">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>
+            <Calendar className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
             Budget starts on
           </label>
           <input
@@ -167,29 +177,33 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
             value={setup.startDate}
             onChange={(e) => set('startDate', e.target.value)}
             className={inputCls}
-            style={{ colorScheme: 'dark' }}
+            style={{ color: '#111827', colorScheme: 'light' }}
           />
-          <p className="text-[11px] text-white/35 mt-1.5">You can always change this later.</p>
+          <p className="text-xs mt-1.5" style={{ color: '#9CA3AF' }}>You can always change this later.</p>
         </div>
 
         {/* Rollover (optional) */}
         <div
           className="rounded-2xl overflow-hidden"
-          style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ border: '1px solid #E5E7EB', background: '#FFFFFF' }}
         >
           <button
             onClick={() => setShowRollover(!showRollover)}
-            className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
-            style={{ background: 'rgba(255,255,255,0.05)' }}
+            className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors"
           >
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all text-xs font-bold"
-              style={showRollover ? { background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)', color: 'white' } : { border: '1.5px solid rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.5)' }}
+            <PlusCircle
+              className="w-5 h-5 flex-shrink-0 transition-colors"
+              style={{ color: showRollover ? '#EC4899' : '#9CA3AF' }}
+            />
+            <span className="text-sm font-medium flex-1" style={{ color: '#374151' }}>
+              I have money left over from before
+            </span>
+            <span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: '#F3F4F6', color: '#9CA3AF' }}
             >
-              {showRollover ? 'âœ“' : '+'}
-            </div>
-            <span className="text-sm text-white/65 font-medium">I have money left over from before</span>
-            <span className="text-[10px] text-white/35 ml-auto">optional</span>
+              Optional
+            </span>
           </button>
 
           <AnimatePresence>
@@ -200,10 +214,17 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
                 exit={{ height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="px-4 pb-4 pt-2">
-                  <p className="text-xs text-white/40 mb-2">Any savings that carry forward into this period.</p>
+                <div className="px-4 pb-4 pt-1 border-t border-gray-100">
+                  <p className="text-xs mb-2" style={{ color: '#9CA3AF' }}>
+                    Any savings that carry forward into this period.
+                  </p>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 font-semibold text-sm">{selected.symbol}</span>
+                    <span
+                      className="absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-sm"
+                      style={{ color: '#9CA3AF' }}
+                    >
+                      {selected.symbol}
+                    </span>
                     <input
                       type="number"
                       inputMode="decimal"
@@ -212,7 +233,8 @@ export function SetupStep({ setup, onChange, onNext, onBack }: SetupStepProps) {
                       placeholder="0.00"
                       value={setup.rollover || ''}
                       onChange={(e) => set('rollover', parseFloat(e.target.value) || 0)}
-                      className={inputCls + " pl-10"}
+                      className={inputCls + ' pl-9'}
+                      style={{ color: '#111827' }}
                     />
                   </div>
                 </div>

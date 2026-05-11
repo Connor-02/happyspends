@@ -1,26 +1,84 @@
-'use client';
+﻿'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Bell, BarChart2, FileText, CreditCard, Target, AlertTriangle } from 'lucide-react';
 import { OnboardingStepCard } from './OnboardingStepCard';
 import { loadPremiumStore, updateReminder } from '@/lib/premiumStorage';
 import type { ReminderType } from '@/types/premium';
+import type { LucideIcon } from 'lucide-react';
 
 interface ReminderOption {
   id: string;
   type: ReminderType;
-  icon: string;
+  Icon: LucideIcon;
+  iconColor: string;
+  iconBg: string;
   title: string;
   desc: string;
   defaultOn: boolean;
 }
 
 const OPTIONS: ReminderOption[] = [
-  { id: 'reminder-daily-spending', type: 'daily-spending', icon: '🌅', title: 'Daily Check-in', desc: "A gentle nudge to log today's spending", defaultOn: true },
-  { id: 'reminder-weekly-review', type: 'weekly-review', icon: '📊', title: 'Weekly Budget Review', desc: "See how you're tracking against your budget", defaultOn: true },
-  { id: 'reminder-upcoming-bill', type: 'upcoming-bill', icon: '🧾', title: 'Bill Due Alerts', desc: 'Know before a bill is about to hit', defaultOn: true },
-  { id: 'reminder-upcoming-subscription', type: 'upcoming-subscription', icon: '📱', title: 'Subscription Renewals', desc: 'Never be surprised by a renewal charge', defaultOn: false },
-  { id: 'reminder-savings-checkin', type: 'savings-checkin', icon: '🎯', title: 'Savings Goal Nudges', desc: 'Celebrate progress towards your goals', defaultOn: false },
-  { id: 'reminder-low-balance', type: 'low-balance', icon: '⚠️', title: 'Low Balance Warning', desc: 'Alert when your available budget runs low', defaultOn: true },
+  {
+    id: 'reminder-daily-spending',
+    type: 'daily-spending',
+    Icon: Bell,
+    iconColor: '#8B5CF6',
+    iconBg: '#EDE9FE',
+    title: 'Daily Check-in',
+    desc: "A gentle nudge to log today's spending",
+    defaultOn: true,
+  },
+  {
+    id: 'reminder-weekly-review',
+    type: 'weekly-review',
+    Icon: BarChart2,
+    iconColor: '#60A5FA',
+    iconBg: '#DBEAFE',
+    title: 'Weekly Budget Review',
+    desc: "See how you're tracking against your budget",
+    defaultOn: true,
+  },
+  {
+    id: 'reminder-upcoming-bill',
+    type: 'upcoming-bill',
+    Icon: FileText,
+    iconColor: '#8B5CF6',
+    iconBg: '#EDE9FE',
+    title: 'Bill Due Alerts',
+    desc: 'Know before a bill is about to hit',
+    defaultOn: true,
+  },
+  {
+    id: 'reminder-upcoming-subscription',
+    type: 'upcoming-subscription',
+    Icon: CreditCard,
+    iconColor: '#60A5FA',
+    iconBg: '#DBEAFE',
+    title: 'Subscription Renewals',
+    desc: 'Never be surprised by a renewal charge',
+    defaultOn: false,
+  },
+  {
+    id: 'reminder-savings-checkin',
+    type: 'savings-checkin',
+    Icon: Target,
+    iconColor: '#22C55E',
+    iconBg: '#DCFCE7',
+    title: 'Savings Goal Nudges',
+    desc: 'Celebrate progress towards your goals',
+    defaultOn: false,
+  },
+  {
+    id: 'reminder-low-balance',
+    type: 'low-balance',
+    Icon: AlertTriangle,
+    iconColor: '#F59E0B',
+    iconBg: '#FEF3C7',
+    title: 'Low Balance Warning',
+    desc: 'Alert when your available budget runs low',
+    defaultOn: true,
+  },
 ];
 
 interface RemindersStepProps {
@@ -65,9 +123,9 @@ export function RemindersStep({ onNext, onBack }: RemindersStepProps) {
       hint="Reminders help you stay consistent without needing to think about it."
       onNext={handleNext}
       onBack={onBack}
-      nextLabel="Continue →"
+      nextLabel="Continue"
     >
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {OPTIONS.map((opt, i) => {
           const on = enabled[opt.id];
           return (
@@ -78,51 +136,51 @@ export function RemindersStep({ onNext, onBack }: RemindersStepProps) {
               transition={{ delay: i * 0.05 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => toggle(opt.id)}
-              className="w-full flex items-center gap-4 rounded-2xl px-4 py-4 text-left transition-all"
+              className="w-full flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left transition-all bg-white"
               style={
                 on
-                  ? { background: 'rgba(108,99,255,0.12)', border: '1.5px solid rgba(108,99,255,0.35)' }
-                  : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }
+                  ? { border: '1.5px solid #DDD6FE' }
+                  : { border: '1px solid #E5E7EB' }
               }
             >
               {/* Icon */}
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl transition-all"
-                style={on ? { background: 'rgba(108,99,255,0.25)' } : { background: 'rgba(255,255,255,0.08)' }}
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
+                style={{ background: on ? opt.iconBg : '#F9FAFB' }}
               >
-                {opt.icon}
+                <opt.Icon className="w-5 h-5" style={{ color: on ? opt.iconColor : '#9CA3AF' }} />
               </div>
 
               {/* Text */}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold transition-colors ${on ? 'text-white' : 'text-white/60'}`}>
+                <p className="text-sm font-semibold transition-colors" style={{ color: on ? '#111827' : '#6B7280' }}>
                   {opt.title}
                 </p>
-                <p className="text-xs text-white/35 mt-0.5 leading-snug">{opt.desc}</p>
+                <p className="text-xs mt-0.5 leading-snug" style={{ color: '#9CA3AF' }}>{opt.desc}</p>
               </div>
 
               {/* Toggle pill */}
               <div
-                className="relative w-12 h-6 rounded-full flex-shrink-0 transition-all duration-300"
-                style={on ? { background: 'linear-gradient(135deg,#6C63FF,#9B6DFF)' } : { background: 'rgba(255,255,255,0.15)' }}
+                className="relative w-11 h-6 rounded-full flex-shrink-0 transition-all duration-300"
+                style={on ? { background: '#8B5CF6' } : { background: '#E5E7EB' }}
               >
                 <motion.div
                   layout
                   transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md"
-                  style={{ left: on ? '1.375rem' : '0.125rem' }}
+                  className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow"
+                  style={{ left: on ? '1.25rem' : '0.125rem' }}
                 />
               </div>
             </motion.button>
           );
         })}
 
-        {/* Summary chip */}
         <motion.p
           key={enabledCount}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center text-xs text-white/40 pt-1"
+          className="text-center text-xs pt-1"
+          style={{ color: '#9CA3AF' }}
         >
           {enabledCount === 0
             ? 'No reminders selected — you can add them later in Settings.'

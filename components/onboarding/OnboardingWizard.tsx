@@ -64,8 +64,8 @@ export function OnboardingWizard() {
   // Loading state
   if (!state) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <div className="w-8 h-8 rounded-full border-4 border-pink-400 border-t-transparent animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFC' }}>
+        <div className="w-8 h-8 rounded-full border-4 border-t-transparent animate-spin" style={{ borderColor: '#EC4899', borderTopColor: 'transparent' }} />
       </div>
     );
   }
@@ -74,21 +74,26 @@ export function OnboardingWizard() {
   if (finishing) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-8"
-        style={{ background: 'linear-gradient(145deg,#0B0B1A 0%,#1A0E3A 55%,#0D1429 100%)' }}
+        className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-8 relative overflow-hidden"
+        style={{ background: '#F8FAFC' }}
       >
-        {/* Blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle,#FF5FA2,transparent 70%)' }} />
-          <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle,#9B6DFF,transparent 70%)' }} />
+        {/* Soft glows */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top right, rgba(236,72,153,0.14), transparent 42%)' }} />
+          <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at bottom left, rgba(96,165,250,0.11), transparent 46%)' }} />
         </div>
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, type: 'spring', bounce: 0.5 }}
-          className="relative text-7xl"
+          className="relative z-10"
         >
-          🎉
+          <div
+            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto"
+            style={{ background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)', boxShadow: '0 8px 32px rgba(236,72,153,0.32)' }}
+          >
+            <span className="text-3xl">🎉</span>
+          </div>
         </motion.div>
         <motion.div
           initial={{ y: 24, opacity: 0 }}
@@ -96,11 +101,15 @@ export function OnboardingWizard() {
           transition={{ delay: 0.3 }}
           className="space-y-3 max-w-xs relative z-10"
         >
-          <h1 className="text-3xl font-extrabold text-white">
-            Your budget is ready!<br />
-            <span style={{ background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Let&apos;s go. 🚀</span>
+          <h1 className="text-3xl font-extrabold" style={{ color: '#111827' }}>
+            Your budget is ready!
           </h1>
-          <p className="text-white/50 text-base leading-relaxed">
+          <p className="text-lg font-bold">
+            <span style={{ background: 'linear-gradient(135deg, #EC4899, #8B5CF6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              Let&apos;s go
+            </span>
+          </p>
+          <p className="text-base leading-relaxed" style={{ color: '#6B7280' }}>
             Your personalised dashboard is being set up. You can edit everything anytime.
           </p>
         </motion.div>
@@ -109,10 +118,9 @@ export function OnboardingWizard() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
           className="flex items-center gap-2 relative z-10"
-          style={{ color: '#FF5FA2' }}
         >
-          <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#FF5FA2', borderTopColor: 'transparent' }} />
-          <span className="text-sm font-semibold">Opening your dashboard…</span>
+          <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#EC4899', borderTopColor: 'transparent' }} />
+          <span className="text-sm font-semibold" style={{ color: '#EC4899' }}>Opening your dashboard...</span>
         </motion.div>
       </div>
     );

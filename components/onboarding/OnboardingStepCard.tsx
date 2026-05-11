@@ -1,13 +1,14 @@
 ﻿'use client';
 import { motion } from 'framer-motion';
+import { ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface OnboardingStepCardProps {
-  step: number;        // 1-based display (e.g. 2 of 9)
+  step: number;
   totalSteps: number;
   title: string;
   subtitle?: string;
-  hint?: string;       // small contextual tip shown below subtitle
+  hint?: string;
   children: React.ReactNode;
   onNext: () => void;
   onBack?: () => void;
@@ -30,30 +31,41 @@ export function OnboardingStepCard({
   nextDisabled = false,
 }: OnboardingStepCardProps) {
   return (
-    /* Dark gradient shell â€” always rendered in "night" palette */
     <div
       className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: 'linear-gradient(145deg,#0B0B1A 0%,#1A0E3A 55%,#0D1429 100%)' }}
+      style={{ background: '#F8FAFC' }}
     >
-      {/* Decorative ambient blobs */}
-      <div className="pointer-events-none absolute -top-36 -right-24 w-96 h-96 rounded-full opacity-30 blur-3xl" style={{ background: '#FF5FA2' }} />
-      <div className="pointer-events-none absolute -bottom-28 -left-24 w-96 h-96 rounded-full opacity-25 blur-3xl" style={{ background: '#9B6DFF' }} />
-      <div className="pointer-events-none absolute top-1/2 right-0 w-64 h-64 rounded-full opacity-10 blur-3xl" style={{ background: '#6C63FF' }} />
+      {/* Soft ambient glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(circle at top right, rgba(236,72,153,0.10), transparent 40%)' }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(circle at bottom left, rgba(96,165,250,0.08), transparent 45%)' }}
+        />
+      </div>
 
-      {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-5 pt-12 pb-4"
-        style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(11,11,26,0.6)' }}>
+      {/* Header */}
+      <div
+        className="sticky top-0 z-10 flex items-center justify-between px-5 pt-12 pb-3"
+        style={{
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          background: 'rgba(248,250,252,0.85)',
+          borderBottom: '1px solid #F3F4F6',
+        }}
+      >
         {/* Back button */}
         <div className="w-10">
           {onBack && (
             <motion.button
               whileTap={{ scale: 0.88 }}
               onClick={onBack}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
+              <ChevronLeft className="w-5 h-5" />
             </motion.button>
           )}
         </div>
@@ -61,11 +73,11 @@ export function OnboardingStepCard({
         {/* Segmented progress */}
         <div className="flex-1 flex gap-1.5 mx-3">
           {Array.from({ length: totalSteps }).map((_, i) => (
-            <div key={i} className="relative flex-1 h-1 rounded-full overflow-hidden bg-white/15">
+            <div key={i} className="relative flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5E7EB' }}>
               {i < step && (
                 <motion.div
                   className="absolute inset-0 rounded-full"
-                  style={{ originX: 0, background: 'linear-gradient(90deg,#FF5FA2,#9B6DFF)' }}
+                  style={{ originX: 0, background: 'linear-gradient(90deg, #EC4899, #8B5CF6)' }}
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.4, ease: 'easeOut' }}
@@ -75,72 +87,107 @@ export function OnboardingStepCard({
           ))}
         </div>
 
-        {/* Skip button */}
+        {/* Skip */}
         <div className="w-10 flex justify-end">
           {onSkip && (
-            <button onClick={onSkip} className="text-xs font-semibold text-white/50 hover:text-white/80 transition-colors py-1 px-1">
+            <button
+              onClick={onSkip}
+              className="text-xs font-semibold py-1 px-1 transition-colors"
+              style={{ color: '#9CA3AF' }}
+            >
               Skip
             </button>
           )}
         </div>
       </div>
 
-      {/* â”€â”€ Scrollable content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="px-5 pt-6 pb-4 max-w-lg mx-auto">
-          {/* Step heading */}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto relative z-10">
+        <div className="px-5 pt-6 pb-4 max-w-[580px] mx-auto w-full">
           <motion.div
-            initial={{ y: 18, opacity: 0 }}
+            initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="mb-6"
+            className="mb-5"
           >
-            <p className="text-[11px] font-bold tracking-widest uppercase mb-2"
-              style={{ color: '#FF5FA2' }}>
+            <p
+              className="text-xs font-bold tracking-widest uppercase mb-1.5"
+              style={{ color: '#EC4899' }}
+            >
               Step {step} of {totalSteps}
             </p>
-            <h1 className="text-2xl font-extrabold text-white leading-tight">{title}</h1>
+            <h1 className="text-2xl font-extrabold leading-tight" style={{ color: '#111827' }}>
+              {title}
+            </h1>
             {subtitle && (
-              <p className="text-sm text-white/55 mt-2 leading-relaxed">{subtitle}</p>
+              <p className="text-sm mt-1.5 leading-relaxed" style={{ color: '#6B7280' }}>
+                {subtitle}
+              </p>
             )}
             {hint && (
-              <div className="mt-3 flex items-start gap-2 rounded-2xl px-3.5 py-2.5" style={{ background: 'rgba(255,95,162,0.12)', border: '1px solid rgba(255,95,162,0.2)' }}>
-                <span className="text-sm mt-0.5">ðŸ’¡</span>
-                <p className="text-xs text-white/65 leading-relaxed">{hint}</p>
+              <div
+                className="mt-3 flex items-start gap-2.5 rounded-2xl px-3.5 py-2.5"
+                style={{
+                  background: 'rgba(236,72,153,0.06)',
+                  border: '1px solid rgba(236,72,153,0.18)',
+                }}
+              >
+                <svg
+                  className="w-4 h-4 mt-0.5 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  style={{ color: '#EC4899' }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p className="text-xs leading-relaxed" style={{ color: '#BE185D' }}>
+                  {hint}
+                </p>
               </div>
             )}
           </motion.div>
-
           {children}
         </div>
       </div>
 
-      {/* â”€â”€ Footer actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <div className="sticky bottom-0 px-5 py-5 safe-bottom"
-        style={{ backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', background: 'rgba(11,11,26,0.7)', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div className="flex gap-3 max-w-lg mx-auto">
+      {/* Footer */}
+      <div
+        className="sticky bottom-0 px-5 py-4 safe-bottom relative z-10"
+        style={{ background: '#FFFFFF', borderTop: '1px solid #F3F4F6' }}
+      >
+        <div className="flex gap-3 max-w-[580px] mx-auto">
           {onBack && (
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={onBack}
-              className="flex-1 py-4 rounded-2xl text-sm font-semibold text-white/70 transition-all"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+              className="flex-1 py-4 rounded-2xl text-sm font-semibold transition-all"
+              style={{ background: '#F3F4F6', color: '#6B7280', border: '1px solid #E5E7EB' }}
             >
-              â† Back
+              Back
             </motion.button>
           )}
           <motion.button
-            whileTap={{ scale: nextDisabled ? 1 : 0.96 }}
+            whileTap={{ scale: nextDisabled ? 1 : 0.97 }}
             onClick={onNext}
             disabled={nextDisabled}
             className={cn(
-              'py-4 rounded-2xl font-bold text-sm transition-all',
+              'py-4 rounded-2xl font-bold text-sm text-white transition-all',
               onBack ? 'flex-[2]' : 'w-full',
-              nextDisabled
-                ? 'opacity-40 cursor-not-allowed text-white/60'
-                : 'text-white shadow-lg'
             )}
-            style={nextDisabled ? { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.1)' } : { background: 'linear-gradient(135deg,#FF5FA2 0%,#9B6DFF 100%)', boxShadow: '0 4px 24px rgba(255,95,162,0.35)' }}
+            style={
+              nextDisabled
+                ? { background: '#D1D5DB', cursor: 'not-allowed', opacity: 0.6 }
+                : {
+                    background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
+                    boxShadow: '0 4px 20px rgba(236,72,153,0.28)',
+                  }
+            }
           >
             {nextLabel}
           </motion.button>

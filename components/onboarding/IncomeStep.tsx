@@ -1,18 +1,19 @@
 ﻿'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DollarSign, X, Check } from 'lucide-react';
 import type { IncomeSource, Frequency } from '@/types/budget';
 import { OnboardingStepCard } from './OnboardingStepCard';
 import { generateId } from '@/lib/utils';
 import { freqLabel } from '@/lib/budgetCalculations';
 
 const PRESETS = [
-  { name: 'Job / Salary', icon: 'ðŸ’¼', freq: 'fortnightly' as Frequency },
-  { name: 'Side Hustle', icon: 'ðŸš€', freq: 'monthly' as Frequency },
-  { name: 'Government Benefit', icon: 'ðŸ›ï¸', freq: 'fortnightly' as Frequency },
-  { name: 'Freelance Work', icon: 'ðŸ’»', freq: 'monthly' as Frequency },
-  { name: 'Rental Income', icon: 'ðŸ ', freq: 'monthly' as Frequency },
-  { name: 'Other Income', icon: 'ðŸ’µ', freq: 'monthly' as Frequency },
+  { name: 'Job / Salary', freq: 'fortnightly' as Frequency },
+  { name: 'Side Hustle', freq: 'monthly' as Frequency },
+  { name: 'Government Benefit', freq: 'fortnightly' as Frequency },
+  { name: 'Freelance Work', freq: 'monthly' as Frequency },
+  { name: 'Rental Income', freq: 'monthly' as Frequency },
+  { name: 'Other Income', freq: 'monthly' as Frequency },
 ];
 
 const FREQS: { value: Frequency; label: string }[] = [
@@ -22,7 +23,8 @@ const FREQS: { value: Frequency; label: string }[] = [
   { value: 'yearly', label: 'Yearly' },
 ];
 
-const inputCls = "w-full px-4 py-3.5 rounded-2xl text-white text-sm focus:outline-none transition-all placeholder:text-white/30 bg-white/10 border border-white/15 focus:border-[#FF5FA2]/70";
+const inputCls =
+  'w-full px-4 py-3.5 rounded-2xl text-sm focus:outline-none transition-all placeholder:text-gray-400 bg-white border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-50';
 
 interface IncomeStepProps {
   incomeSources: IncomeSource[];
@@ -57,7 +59,10 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
     if (!form?.name.trim() || !form.amount) return;
     const amount = parseFloat(form.amount);
     if (isNaN(amount) || amount <= 0) return;
-    onChange([...incomeSources, { id: generateId(), name: form.name.trim(), amount, frequency: form.frequency, nextPayDate: form.nextPayDate || undefined }]);
+    onChange([
+      ...incomeSources,
+      { id: generateId(), name: form.name.trim(), amount, frequency: form.frequency, nextPayDate: form.nextPayDate || undefined },
+    ]);
     setForm(null);
   }
 
@@ -73,9 +78,9 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
       onNext={onNext}
       onBack={onBack}
       onSkip={onSkip}
-      nextLabel={incomeSources.length > 0 ? 'Continue â†’' : 'Skip for now'}
+      nextLabel={incomeSources.length > 0 ? 'Continue' : 'Skip for now'}
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Added items */}
         <AnimatePresence>
           {incomeSources.map((src, i) => (
@@ -86,20 +91,26 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
               exit={{ opacity: 0, x: -20 }}
               transition={{ delay: i * 0.04 }}
               className="flex items-center gap-3 rounded-2xl px-4 py-3"
-              style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.25)' }}
+              style={{ background: '#F0FDF4', border: '1px solid #BBF7D0' }}
             >
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(74,222,128,0.2)' }}>
-                <span className="text-base">ðŸ’°</span>
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: '#DCFCE7' }}
+              >
+                <DollarSign className="w-4 h-4" style={{ color: '#22C55E' }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{src.name}</p>
-                <p className="text-xs text-white/50">{currencySymbol}{src.amount.toLocaleString()} Â· {freqLabel(src.frequency)}</p>
+                <p className="text-sm font-semibold truncate" style={{ color: '#111827' }}>{src.name}</p>
+                <p className="text-xs" style={{ color: '#6B7280' }}>
+                  {currencySymbol}{src.amount.toLocaleString()} · {freqLabel(src.frequency)}
+                </p>
               </div>
               <button
                 onClick={() => onChange(incomeSources.filter((s) => s.id !== src.id))}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/10 transition-all text-lg leading-none flex-shrink-0"
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:bg-red-50"
+                style={{ color: '#D1D5DB' }}
               >
-                Ã—
+                <X className="w-4 h-4" />
               </button>
             </motion.div>
           ))}
@@ -112,12 +123,18 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
               initial={{ opacity: 0, y: -8, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.97 }}
-              className="rounded-3xl p-4 space-y-3"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,95,162,0.4)' }}
+              className="rounded-3xl p-4 space-y-3 bg-white"
+              style={{ border: '1.5px solid #FBCFE8' }}
             >
               <div className="flex items-center justify-between">
-                <p className="font-bold text-white text-sm">New Income Source</p>
-                <button onClick={() => setForm(null)} className="w-7 h-7 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 text-lg leading-none transition-all">Ã—</button>
+                <p className="font-bold text-sm" style={{ color: '#111827' }}>New Income Source</p>
+                <button
+                  onClick={() => setForm(null)}
+                  className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition-all"
+                  style={{ color: '#9CA3AF' }}
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
               <input
@@ -127,11 +144,17 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
                 value={form.name}
                 onChange={(e) => setField('name', e.target.value)}
                 className={inputCls}
+                style={{ color: '#111827' }}
               />
 
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 font-semibold text-sm">{currencySymbol}</span>
+                  <span
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 font-semibold text-sm"
+                    style={{ color: '#9CA3AF' }}
+                  >
+                    {currencySymbol}
+                  </span>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -140,27 +163,32 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
                     placeholder="0.00"
                     value={form.amount}
                     onChange={(e) => setField('amount', e.target.value)}
-                    className={inputCls + " pl-8"}
+                    className={inputCls + ' pl-8'}
+                    style={{ color: '#111827' }}
                   />
                 </div>
                 <select
                   value={form.frequency}
                   onChange={(e) => setField('frequency', e.target.value as Frequency)}
-                  className="flex-1 px-3 py-3.5 rounded-2xl text-white text-sm focus:outline-none border border-white/15 bg-white/10"
-                  style={{ colorScheme: 'dark' }}
+                  className="flex-1 px-3 py-3.5 rounded-2xl text-sm focus:outline-none border border-gray-200 bg-white"
+                  style={{ color: '#374151', colorScheme: 'light' }}
                 >
-                  {FREQS.map((f) => <option key={f.value} value={f.value} className="bg-[#1A0E3A]">{f.label}</option>)}
+                  {FREQS.map((f) => (
+                    <option key={f.value} value={f.value}>{f.label}</option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-white/40 mb-1.5">Next payment date (optional)</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#9CA3AF' }}>
+                  Next payment date (optional)
+                </label>
                 <input
                   type="date"
                   value={form.nextPayDate}
                   onChange={(e) => setField('nextPayDate', e.target.value)}
                   className={inputCls}
-                  style={{ colorScheme: 'dark' }}
+                  style={{ color: '#111827', colorScheme: 'light' }}
                 />
               </div>
 
@@ -168,10 +196,15 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
                 whileTap={{ scale: canSave ? 0.97 : 1 }}
                 onClick={save}
                 disabled={!canSave}
-                className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all text-white"
-                style={canSave ? { background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)', boxShadow: '0 3px 16px rgba(255,95,162,0.3)' } : { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm text-white transition-all flex items-center justify-center gap-2"
+                style={
+                  canSave
+                    ? { background: 'linear-gradient(135deg, #EC4899, #8B5CF6)', boxShadow: '0 3px 14px rgba(236,72,153,0.25)' }
+                    : { background: '#F3F4F6', color: '#9CA3AF' }
+                }
               >
-                âœ“ Add Income Source
+                {canSave && <Check className="w-4 h-4" />}
+                Add Income Source
               </motion.button>
             </motion.div>
           )}
@@ -180,27 +213,33 @@ export function IncomeStep({ incomeSources, onChange, currencySymbol, onNext, on
         {/* Preset chips + add button */}
         {!form && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-            <p className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-3">Quick Add</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: '#9CA3AF' }}>
+              Quick Add
+            </p>
             <div className="flex flex-wrap gap-2 mb-3">
               {PRESETS.map((p) => (
                 <motion.button
                   key={p.name}
                   whileTap={{ scale: 0.94 }}
                   onClick={() => startAdd(p)}
-                  className="flex items-center gap-2 px-3.5 py-2.5 rounded-full text-sm font-semibold text-white/80 transition-all"
-                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
+                  className="px-3.5 py-2 rounded-full text-sm font-medium transition-all bg-white hover:border-pink-300"
+                  style={{ border: '1px solid #E5E7EB', color: '#374151' }}
                 >
-                  <span>{p.icon}</span>
-                  <span>{p.name}</span>
+                  {p.name}
                 </motion.button>
               ))}
             </div>
             <button
               onClick={() => startAdd()}
               className="flex items-center gap-2 text-sm font-semibold transition-colors"
-              style={{ color: '#FF5FA2' }}
+              style={{ color: '#EC4899' }}
             >
-              <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-black" style={{ background: 'rgba(255,95,162,0.2)', color: '#FF5FA2' }}>+</span>
+              <span
+                className="w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(236,72,153,0.12)', color: '#EC4899' }}
+              >
+                <span className="text-xs font-black leading-none">+</span>
+              </span>
               Add custom income source
             </button>
           </motion.div>

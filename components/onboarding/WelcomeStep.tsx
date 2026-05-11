@@ -1,114 +1,125 @@
 ﻿'use client';
 import { motion } from 'framer-motion';
+import { Wallet, ShieldCheck, Pencil, TrendingUp, FileText, Target, BarChart2 } from 'lucide-react';
 
 interface WelcomeStepProps {
   onStart: () => void;
 }
 
 const features = [
-  { icon: 'âš¡', label: 'Setup in minutes', desc: 'Quick guided flow' },
-  { icon: 'ðŸ”’', label: 'Private & secure', desc: 'Stays on your device' },
-  { icon: 'âœï¸', label: 'Edit anytime', desc: 'No locked-in settings' },
+  { Icon: TrendingUp, label: 'Setup in minutes', desc: 'Quick guided flow' },
+  { Icon: ShieldCheck, label: 'Private & secure', desc: 'Stays on your device' },
+  { Icon: Pencil, label: 'Edit anytime', desc: 'No locked-in settings' },
 ];
 
 const steps = [
-  { icon: 'ðŸ’°', label: 'Income' },
-  { icon: 'ðŸ§¾', label: 'Bills' },
-  { icon: 'ðŸŽ¯', label: 'Goals' },
-  { icon: 'ðŸ“Š', label: 'Insights' },
+  { Icon: TrendingUp, label: 'Income', color: '#22C55E' },
+  { Icon: FileText, label: 'Bills', color: '#8B5CF6' },
+  { Icon: Target, label: 'Goals', color: '#EC4899' },
+  { Icon: BarChart2, label: 'Insights', color: '#60A5FA' },
 ];
 
 export function WelcomeStep({ onStart }: WelcomeStepProps) {
   return (
     <div
       className="min-h-screen flex flex-col relative overflow-hidden"
-      style={{ background: 'linear-gradient(145deg,#0B0B1A 0%,#1A0E3A 55%,#0D1429 100%)' }}
+      style={{ background: '#F8FAFC' }}
     >
-      {/* Blobs */}
-      <div className="pointer-events-none absolute -top-36 -right-24 w-96 h-96 rounded-full opacity-35 blur-3xl" style={{ background: '#FF5FA2' }} />
-      <div className="pointer-events-none absolute -bottom-28 -left-20 w-96 h-96 rounded-full opacity-25 blur-3xl" style={{ background: '#9B6DFF' }} />
-      <div className="pointer-events-none absolute top-1/3 left-1/4 w-72 h-72 rounded-full opacity-10 blur-3xl" style={{ background: '#6C63FF' }} />
+      {/* Soft ambient glows */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(circle at top right, rgba(236,72,153,0.14), transparent 42%)' }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(circle at bottom left, rgba(96,165,250,0.11), transparent 46%)' }}
+        />
+      </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-20 pb-6 max-w-sm mx-auto w-full text-center">
-        {/* Logo mark */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-6 max-w-sm mx-auto w-full text-center relative z-10">
+        {/* Logo */}
         <motion.div
           initial={{ scale: 0.4, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.7, type: 'spring', bounce: 0.45 }}
-          className="mb-8 relative"
+          transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
+          className="mb-7"
         >
           <div
-            className="w-24 h-24 rounded-3xl flex items-center justify-center mx-auto shadow-2xl"
-            style={{ background: 'linear-gradient(135deg,#FF5FA2 0%,#9B6DFF 100%)', boxShadow: '0 0 60px rgba(255,95,162,0.5)' }}
+            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto"
+            style={{
+              background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
+              boxShadow: '0 8px 32px rgba(236,72,153,0.32)',
+            }}
           >
-            <span className="text-4xl">ðŸ’°</span>
+            <Wallet className="w-9 h-9 text-white" />
           </div>
-          {/* Pulse ring */}
-          <motion.div
-            className="absolute inset-0 rounded-3xl"
-            style={{ background: 'linear-gradient(135deg,#FF5FA2,#9B6DFF)', opacity: 0.3 }}
-            animate={{ scale: [1, 1.18, 1], opacity: [0.3, 0, 0.3] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-          />
         </motion.div>
 
         {/* Headline */}
         <motion.div
-          initial={{ y: 28, opacity: 0 }}
+          initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.25, duration: 0.45 }}
-          className="space-y-3 mb-8"
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="space-y-3 mb-7"
         >
-          <h1 className="text-4xl font-extrabold text-white leading-tight tracking-tight">
-            Meet your money<br />
-            <span style={{ background: 'linear-gradient(90deg,#FF5FA2,#9B6DFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+          <h1 className="text-4xl font-extrabold leading-tight tracking-tight" style={{ color: '#111827' }}>
+            Meet your money
+            <br />
+            <span
+              style={{
+                background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
               assistant
             </span>
           </h1>
-          <p className="text-white/55 text-base leading-relaxed">
-            HappySpends helps everyday people feel confident about their money â€” no spreadsheets, no stress.
+          <p className="text-base leading-relaxed" style={{ color: '#6B7280' }}>
+            HappySpends helps everyday people feel confident about their money — no spreadsheets, no stress.
           </p>
         </motion.div>
 
         {/* Step previews */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          className="flex items-center gap-3 mb-8"
+          transition={{ delay: 0.35, duration: 0.4 }}
+          className="flex items-center gap-4 mb-7"
         >
-          {steps.map((s, i) => (
-            <div key={s.label} className="flex flex-col items-center gap-1">
+          {steps.map((s) => (
+            <div key={s.label} className="flex flex-col items-center gap-1.5">
               <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
-                style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
               >
-                {s.icon}
+                <s.Icon className="w-5 h-5" style={{ color: s.color }} />
               </div>
-              <p className="text-[10px] text-white/45 font-medium">{s.label}</p>
-              {i < steps.length - 1 && (
-                <div className="absolute" />
-              )}
+              <p className="text-[10px] font-medium" style={{ color: '#9CA3AF' }}>{s.label}</p>
             </div>
           ))}
         </motion.div>
 
         {/* Feature pills */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.52, duration: 0.4 }}
-          className="grid grid-cols-3 gap-2 w-full mb-10"
+          transition={{ delay: 0.48, duration: 0.4 }}
+          className="grid grid-cols-3 gap-2 w-full mb-8"
         >
           {features.map((f) => (
             <div
               key={f.label}
               className="rounded-2xl p-3 text-center"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
+              style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
             >
-              <div className="text-xl mb-1">{f.icon}</div>
-              <p className="text-[11px] font-bold text-white/80 leading-tight">{f.label}</p>
-              <p className="text-[10px] text-white/40 mt-0.5 leading-tight">{f.desc}</p>
+              <div className="flex justify-center mb-1.5">
+                <f.Icon className="w-4 h-4" style={{ color: '#EC4899' }} />
+              </div>
+              <p className="text-[11px] font-bold leading-tight" style={{ color: '#374151' }}>{f.label}</p>
+              <p className="text-[10px] mt-0.5 leading-tight" style={{ color: '#9CA3AF' }}>{f.desc}</p>
             </div>
           ))}
         </motion.div>
@@ -116,21 +127,24 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
 
       {/* CTA */}
       <motion.div
-        initial={{ y: 40, opacity: 0 }}
+        initial={{ y: 32, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.65, duration: 0.4 }}
-        className="px-6 pb-12 max-w-sm mx-auto w-full"
+        transition={{ delay: 0.6, duration: 0.4 }}
+        className="px-6 pb-12 max-w-sm mx-auto w-full relative z-10"
       >
         <motion.button
-          whileTap={{ scale: 0.96 }}
+          whileTap={{ scale: 0.97 }}
           onClick={onStart}
-          className="w-full py-5 rounded-3xl font-bold text-lg text-white shadow-2xl"
-          style={{ background: 'linear-gradient(135deg,#FF5FA2 0%,#9B6DFF 100%)', boxShadow: '0 6px 32px rgba(255,95,162,0.45)' }}
+          className="w-full py-4 rounded-3xl font-bold text-base text-white"
+          style={{
+            background: 'linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)',
+            boxShadow: '0 6px 28px rgba(236,72,153,0.32)',
+          }}
         >
-          Get Started â†’
+          Get Started
         </motion.button>
-        <p className="text-center text-[11px] text-white/35 mt-3">
-          Takes 3â€“5 minutes Â· No account needed Â· 100% private
+        <p className="text-center text-xs mt-3" style={{ color: '#9CA3AF' }}>
+          Takes 3–5 minutes · No account needed · 100% private
         </p>
       </motion.div>
     </div>
