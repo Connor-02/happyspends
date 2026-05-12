@@ -45,7 +45,7 @@ export function OtterInsightOverlay({
             {/* Otter — centered, overlaps card top edge */}
             <motion.div
               className="relative z-10 pointer-events-none"
-              style={{ marginBottom: -55 }}
+              style={{ marginBottom: -32 }}
               initial={{ scale: 0.5, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.55, opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ export function OtterInsightOverlay({
                   background: '#FFFFFF',
                   borderRadius: 28,
                   boxShadow: '0 20px 56px rgba(0,0,0,0.22), 0 4px 14px rgba(0,0,0,0.10)',
-                  paddingTop: 68,
+                  paddingTop: 44,
                   paddingBottom: 20,
                   paddingLeft: 22,
                   paddingRight: 22,
