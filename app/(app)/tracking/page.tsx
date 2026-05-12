@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useStore } from '@/components/providers/StoreProvider';
@@ -16,6 +16,7 @@ import {
 import type { HabitStats, BudgetHealthSnapshot } from '@/types/premium';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { Card } from '@/components/ui/Card';
+import { OtterInsightOverlay } from '@/components/tracking/OtterInsightOverlay';
 import { Badge } from '@/components/ui/Badge';
 
 function stagger(i: number) {
@@ -47,6 +48,8 @@ export default function TrackingPage() {
   const [premiumData, setPremiumData] = useState(loadPremiumStore());
   const [completing, setCompleting] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'habits' | 'insights' | 'history'>('habits');
+  const [showOtterInsight, setShowOtterInsight] = useState(false);
+  const otterShownRef = React.useRef(false);
 
   useEffect(() => {
     setCheckIn(getCheckInStatus());
@@ -79,11 +82,37 @@ export default function TrackingPage() {
         debtGoals.length
       : 0;
 
+  // Derived insight values for the otter overlay
+  const cashFlow = (summary.totalIncome || summary.plannedIncome) - (summary.totalExpenses + summary.totalBills);
+  const cashFlowStr = sym + Math.abs(cashFlow).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const cashFlowPositive = cashFlow > 0;
+
+  function handleInsightsTabClick() {
+    setActiveTab('insights');
+    if (!otterShownRef.current) {
+      otterShownRef.current = true;
+      setShowOtterInsight(true);
+    }
+  }
+
   const healthColor =
     summary.budgetHealthScore >= 80 ? '#34d399' : summary.budgetHealthScore >= 50 ? '#f59e0b' : '#ef4444';
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
+      <OtterInsightOverlay
+        visible={showOtterInsight}
+        onDismiss={() => setShowOtterInsight(false)}
+        heading="Insight from Happy Otter ✨"
+        openingLine={cashFlowPositive ? "You're doing great! 🎉" : "Here's how you're doing:"}
+        body={
+          cashFlowPositive
+            ? `You have a positive cash flow of ${cashFlowStr} this period.`
+            : `Your expenses are ${cashFlowStr} over your income this period.`
+        }
+        highlightText={cashFlowStr}
+        closingLine="Keep it up by consistently tracking your habits and spending wisely."
+      />
       {/* Header */}
       <motion.div {...stagger(0)} className="flex items-center justify-between">
         <div>
@@ -177,7 +206,7 @@ export default function TrackingPage() {
           {(['habits', 'insights', 'history'] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => tab === 'insights' ? handleInsightsTabClick() : setActiveTab(tab)}
               className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all capitalize ${
                 activeTab === tab
                   ? 'bg-white dark:bg-gray-900 text-pink-500 shadow-sm'
