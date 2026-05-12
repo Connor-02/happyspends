@@ -9,12 +9,20 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
+    const MIN_SPLASH_MS = 2000;
+    const start = Date.now();
+
     const store = loadStore();
-    if (store.settings.onboardingComplete) {
-      router.replace('/dashboard');
-    } else {
-      router.replace('/onboarding');
-    }
+    const target = store.settings.onboardingComplete ? '/dashboard' : '/onboarding';
+
+    const elapsed = Date.now() - start;
+    const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+
+    const timer = setTimeout(() => {
+      router.replace(target);
+    }, remaining);
+
+    return () => clearTimeout(timer);
   }, [router]);
 
   return (
@@ -23,27 +31,27 @@ export default function RootPage() {
       style={{ background: '#FFFFFF' }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
+        initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="flex flex-col items-center gap-8"
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="flex flex-col items-center gap-10"
       >
         <Image
-          src="/branding/happyspends-full-logo.png"
+          src="/otterlogo.png"
           alt="HappySpends"
-          width={300}
-          height={180}
+          width={320}
+          height={200}
           priority
           style={{ width: '100%', maxWidth: 300, height: 'auto', objectFit: 'contain' }}
         />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.35 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
           className="flex flex-col items-center gap-3"
         >
           <div
-            className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
+            className="w-6 h-6 rounded-full border-2 animate-spin"
             style={{ borderColor: '#EC4899', borderTopColor: 'transparent' }}
           />
           <p
