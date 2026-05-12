@@ -3,19 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
 export interface OtterInsightProps {
-  /** Whether the overlay is currently visible */
   visible: boolean;
-  /** Called when the user taps to dismiss */
   onDismiss: () => void;
-  /** Heading text, default "Insight from Happy Otter ✨" */
   heading?: string;
-  /** Opening line, e.g. "You're doing great! 🎉" */
   openingLine?: string;
-  /** Main body — supports highlighting via `highlightText` */
   body: string;
-  /** Substring within `body` to highlight in pink */
   highlightText?: string;
-  /** Closing encouragement line */
   closingLine?: string;
 }
 
@@ -28,78 +21,73 @@ export function OtterInsightOverlay({
   highlightText,
   closingLine,
 }: OtterInsightProps) {
-  // Split body around highlightText so we can colour it
-  const bodyParts = highlightText
-    ? body.split(highlightText)
-    : [body];
+  const bodyParts = highlightText ? body.split(highlightText) : [body];
 
   return (
     <AnimatePresence>
       {visible && (
-        // Full-screen tap target — tapping anywhere dismisses
         <motion.div
           key="otter-overlay"
-          className="fixed inset-0 z-50 flex flex-col items-center justify-end"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)' }}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.58)', backdropFilter: 'blur(1.5px)', padding: '0 24px' }}
           onClick={onDismiss}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.22 }}
+          transition={{ duration: 0.2 }}
         >
-          {/* Dark backdrop */}
+          {/* Otter + card column, centered */}
           <div
-            className="absolute inset-0"
-            style={{ background: 'rgba(0, 0, 0, 0.62)', backdropFilter: 'blur(1px)' }}
-          />
-
-          {/* Otter + Bubble wrapper — stop tap propagation so clicking the bubble still dismisses via parent */}
-          <div className="relative w-full max-w-sm px-5 flex flex-col items-center">
-
-            {/* Otter mascot — overlaps top of bubble */}
+            className="relative flex flex-col items-center"
+            style={{ width: '100%', maxWidth: 390 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Otter — centered, overlaps card top edge */}
             <motion.div
               className="relative z-10 pointer-events-none"
-              style={{ marginBottom: -52, marginLeft: -60, alignSelf: 'flex-start' }}
-              initial={{ scale: 0.5, opacity: 0, y: 30 }}
+              style={{ marginBottom: -28 }}
+              initial={{ scale: 0.55, opacity: 0, y: 24 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.5, opacity: 0, y: 20 }}
-              transition={{
-                delay: 0.1,
-                type: 'spring',
-                stiffness: 320,
-                damping: 22,
-              }}
+              exit={{ scale: 0.6, opacity: 0, y: 16 }}
+              transition={{ delay: 0.08, type: 'spring', stiffness: 340, damping: 24 }}
             >
               <Image
                 src="/ottertransparent.png"
                 alt="Happy Otter"
-                width={180}
-                height={180}
+                width={175}
+                height={175}
                 priority
-                style={{ objectFit: 'contain', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.18))' }}
+                style={{
+                  width: 'min(175px, 45vw)',
+                  height: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.22))',
+                }}
               />
             </motion.div>
 
-            {/* Speech bubble */}
+            {/* Speech bubble card */}
             <motion.div
               className="relative w-full z-0"
-              initial={{ y: 30, opacity: 0 }}
+              initial={{ y: 24, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              transition={{ delay: 0.18, duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              exit={{ y: 16, opacity: 0 }}
+              transition={{ delay: 0.16, duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+              onClick={onDismiss}
             >
               <div
-                className="w-full rounded-3xl p-6"
+                className="w-full px-7 py-8"
                 style={{
                   background: '#FFFFFF',
-                  boxShadow: '0 20px 60px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0,0,0,0.10)',
+                  borderRadius: 32,
+                  boxShadow: '0 24px 64px rgba(0,0,0,0.24), 0 4px 16px rgba(0,0,0,0.10)',
                 }}
               >
-                {/* Quote icon */}
+                {/* Pink quote mark */}
                 <div className="mb-3">
-                  <svg width="28" height="22" viewBox="0 0 28 22" fill="none">
+                  <svg width="26" height="20" viewBox="0 0 28 22" fill="none">
                     <path
-                      d="M0 22V13.156C0 9.458 0.938 6.396 2.813 3.969 4.719 1.542 7.51 0 11.188 0v4.625C9.625 4.896 8.354 5.583 7.375 6.688 6.396 7.76 5.906 9.135 5.906 10.812H11.5V22H0ZM16.5 22V13.156c0-3.698.938-6.76 2.813-9.187C21.219 1.542 24.01 0 27.688 0v4.625c-1.563.271-2.833.958-3.813 2.063-.979 1.073-1.469 2.448-1.469 4.124H28V22H16.5Z"
+                      d="M0 22V13.156C0 9.458.938 6.396 2.813 3.969 4.719 1.542 7.51 0 11.188 0v4.625C9.625 4.896 8.354 5.583 7.375 6.688 6.396 7.76 5.906 9.135 5.906 10.812H11.5V22H0ZM16.5 22V13.156c0-3.698.938-6.76 2.813-9.187C21.219 1.542 24.01 0 27.688 0v4.625c-1.563.271-2.833.958-3.813 2.063-.979 1.073-1.469 2.448-1.469 4.124H28V22H16.5Z"
                       fill="#EC4899"
                     />
                   </svg>
@@ -107,7 +95,7 @@ export function OtterInsightOverlay({
 
                 {/* Heading */}
                 <p
-                  className="text-xl font-extrabold mb-3 leading-snug"
+                  className="text-[19px] font-extrabold leading-snug mb-3"
                   style={{ color: '#111827', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
                 >
                   {heading}
@@ -115,51 +103,48 @@ export function OtterInsightOverlay({
 
                 {/* Opening line */}
                 {openingLine && (
-                  <p className="text-base mb-2" style={{ color: '#374151' }}>
+                  <p className="text-[15px] mb-2" style={{ color: '#374151' }}>
                     {openingLine}
                   </p>
                 )}
 
-                {/* Body with optional pink highlight */}
-                <p className="text-base leading-relaxed mb-1" style={{ color: '#374151' }}>
+                {/* Body with optional highlight */}
+                <p className="text-[15px] leading-relaxed" style={{ color: '#374151' }}>
                   {highlightText && bodyParts.length === 2 ? (
                     <>
                       {bodyParts[0]}
                       <span className="font-bold" style={{ color: '#EC4899' }}>{highlightText}</span>
                       {bodyParts[1]}
                     </>
-                  ) : (
-                    body
-                  )}
+                  ) : body}
                 </p>
 
                 {/* Closing line */}
                 {closingLine && (
-                  <p className="text-base mt-2" style={{ color: '#374151' }}>
+                  <p className="text-[15px] leading-relaxed mt-2" style={{ color: '#374151' }}>
                     {closingLine}
                   </p>
                 )}
 
                 {/* Tap to continue */}
                 <p
-                  className="text-sm font-semibold mt-5 text-center cursor-pointer"
+                  className="text-sm font-semibold mt-6 text-center cursor-pointer"
                   style={{ color: '#EC4899' }}
                 >
                   Tap anywhere to continue 👆
                 </p>
               </div>
 
-              {/* Speech bubble downward pointer */}
+              {/* Downward pointer (rotated square) */}
               <div
                 className="absolute left-1/2 -translate-x-1/2"
                 style={{
-                  bottom: -18,
-                  width: 0,
-                  height: 0,
-                  borderLeft: '18px solid transparent',
-                  borderRight: '18px solid transparent',
-                  borderTop: '20px solid #FFFFFF',
-                  filter: 'drop-shadow(0 4px 4px rgba(0,0,0,0.08))',
+                  bottom: -10,
+                  width: 20,
+                  height: 20,
+                  background: '#FFFFFF',
+                  transform: 'translateX(-50%) rotate(45deg)',
+                  boxShadow: '4px 4px 8px rgba(0,0,0,0.06)',
                 }}
               />
             </motion.div>
