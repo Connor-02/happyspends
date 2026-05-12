@@ -29,7 +29,7 @@ export function OtterInsightOverlay({
         <motion.div
           key="otter-overlay"
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.58)', backdropFilter: 'blur(1.5px)', padding: '0 24px' }}
+          style={{ background: 'rgba(0,0,0,0.58)', backdropFilter: 'blur(1.5px)' }}
           onClick={onDismiss}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -39,29 +39,29 @@ export function OtterInsightOverlay({
           {/* Otter + card column, centered */}
           <div
             className="relative flex flex-col items-center"
-            style={{ width: '100%', maxWidth: 390 }}
+            style={{ width: '84vw', maxWidth: 340 }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Otter — centered, overlaps card top edge */}
             <motion.div
               className="relative z-10 pointer-events-none"
-              style={{ marginBottom: -28 }}
-              initial={{ scale: 0.55, opacity: 0, y: 24 }}
+              style={{ marginBottom: -55 }}
+              initial={{ scale: 0.5, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.6, opacity: 0, y: 16 }}
-              transition={{ delay: 0.08, type: 'spring', stiffness: 340, damping: 24 }}
+              exit={{ scale: 0.55, opacity: 0, y: 20 }}
+              transition={{ delay: 0.08, type: 'spring', stiffness: 320, damping: 22 }}
             >
               <Image
                 src="/ottertransparent.png"
                 alt="Happy Otter"
-                width={175}
-                height={175}
+                width={260}
+                height={260}
                 priority
                 style={{
-                  width: 'min(175px, 45vw)',
+                  width: 'min(260px, 62vw)',
                   height: 'auto',
                   objectFit: 'contain',
-                  filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.22))',
+                  filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.26))',
                 }}
               />
             </motion.div>
@@ -69,18 +69,22 @@ export function OtterInsightOverlay({
             {/* Speech bubble card */}
             <motion.div
               className="relative w-full z-0"
-              initial={{ y: 24, opacity: 0 }}
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 16, opacity: 0 }}
+              exit={{ y: 14, opacity: 0 }}
               transition={{ delay: 0.16, duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={onDismiss}
             >
               <div
-                className="w-full px-7 py-8"
+                className="w-full"
                 style={{
                   background: '#FFFFFF',
-                  borderRadius: 32,
-                  boxShadow: '0 24px 64px rgba(0,0,0,0.24), 0 4px 16px rgba(0,0,0,0.10)',
+                  borderRadius: 28,
+                  boxShadow: '0 20px 56px rgba(0,0,0,0.22), 0 4px 14px rgba(0,0,0,0.10)',
+                  paddingTop: 68,
+                  paddingBottom: 20,
+                  paddingLeft: 22,
+                  paddingRight: 22,
                 }}
               >
                 {/* Opening pink quote */}
@@ -90,7 +94,7 @@ export function OtterInsightOverlay({
 
                 {/* Heading */}
                 <p
-                  className="text-[19px] font-extrabold leading-snug mb-3"
+                  className="text-[17px] font-extrabold leading-snug mb-2"
                   style={{ color: '#111827', fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}
                 >
                   {heading}
@@ -98,13 +102,13 @@ export function OtterInsightOverlay({
 
                 {/* Opening line */}
                 {openingLine && (
-                  <p className="text-[15px] mb-2" style={{ color: '#374151' }}>
+                  <p className="text-[14px] mb-1.5" style={{ color: '#374151' }}>
                     {openingLine}
                   </p>
                 )}
 
                 {/* Body with optional highlight */}
-                <p className="text-[15px] leading-relaxed" style={{ color: '#374151' }}>
+                <p className="text-[14px] leading-relaxed" style={{ color: '#374151' }}>
                   {highlightText && bodyParts.length === 2 ? (
                     <>
                       {bodyParts[0]}
@@ -116,7 +120,7 @@ export function OtterInsightOverlay({
 
                 {/* Closing line */}
                 {closingLine && (
-                  <p className="text-[15px] leading-relaxed mt-2" style={{ color: '#374151' }}>
+                  <p className="text-[14px] leading-relaxed mt-1.5" style={{ color: '#374151' }}>
                     {closingLine}
                   </p>
                 )}
@@ -128,7 +132,7 @@ export function OtterInsightOverlay({
 
                 {/* Tap to continue */}
                 <p
-                  className="text-sm font-semibold mt-6 text-center cursor-pointer"
+                  className="text-[13px] font-semibold mt-4 text-center cursor-pointer"
                   style={{ color: '#EC4899' }}
                 >
                   Tap anywhere to continue 👆
@@ -139,12 +143,12 @@ export function OtterInsightOverlay({
               <div
                 className="absolute left-1/2 -translate-x-1/2"
                 style={{
-                  bottom: -10,
-                  width: 20,
-                  height: 20,
+                  bottom: -9,
+                  width: 18,
+                  height: 18,
                   background: '#FFFFFF',
                   transform: 'translateX(-50%) rotate(45deg)',
-                  boxShadow: '4px 4px 8px rgba(0,0,0,0.06)',
+                  boxShadow: '3px 3px 6px rgba(0,0,0,0.06)',
                 }}
               />
             </motion.div>
