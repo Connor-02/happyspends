@@ -99,7 +99,7 @@ export function runReminderChecks(appStore: AppStore): void {
           priority: 'medium',
           actionLink: '/transactions',
         });
-        sendBrowserNotification('HappySpends Check-in', msg, { url: '/transactions', tag: 'checkin' });
+        sendBrowserNotification('Otter Money Check-in', msg, { url: '/transactions', tag: 'checkin' });
       }
     }
   }

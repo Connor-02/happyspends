@@ -78,7 +78,7 @@ export function WelcomeStep({ onStart }: WelcomeStepProps) {
             </span>
           </h1>
           <p className="text-base leading-relaxed" style={{ color: '#6B7280' }}>
-            HappySpends helps everyday people feel confident about their money — no spreadsheets, no stress.
+            Otter Money helps everyday people feel confident about their money — no spreadsheets, no stress.
           </p>
         </motion.div>
 

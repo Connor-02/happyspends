@@ -20,7 +20,7 @@ function exportCSV(store: ReturnType<typeof loadStore>, sym: string) {
     ]),
   ];
   const csv = rows.map((r) => r.map((c) => `"${c}"`).join(',')).join('\n');
-  downloadFile('happyspends-transactions.csv', csv, 'text/csv');
+  downloadFile('otter-money-transactions.csv', csv, 'text/csv');
 }
 
 function downloadFile(filename: string, content: string, type: string) {
@@ -210,7 +210,7 @@ export default function ReportsPage() {
           <Button
             variant="secondary"
             className="w-full justify-center"
-            onClick={() => downloadFile('happyspends-backup.json', exportJSON(), 'application/json')}
+            onClick={() => downloadFile('otter-money-backup.json', exportJSON(), 'application/json')}
           >
             💾 Export JSON Backup
           </Button>

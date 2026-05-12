@@ -38,7 +38,7 @@ export default function RootPage() {
       >
         <Image
           src="/otterlogo.png"
-          alt="HappySpends"
+          alt="Otter Money"
           width={320}
           height={200}
           priority

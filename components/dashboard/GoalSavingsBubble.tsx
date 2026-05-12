@@ -250,7 +250,7 @@ function GoalBubbleCard({
                   <strong className="text-gray-800">
                     {fmt(rec.weeklyAvailableAfterCommitments, sym)}
                   </strong>{' '}
-                  left. To stay safe, HappySpends recommends saving up to 70% of that, which is{' '}
+                  left. To stay safe, Otter Money recommends saving up to 70% of that, which is{' '}
                   <strong className="text-gray-800">{fmt(rec.safeSavingsCapacity, sym)}/week</strong>.
                 </p>
                 {[

@@ -1,6 +1,6 @@
 {
-  "name": "HappySpends",
-  "short_name": "HappySpends",
+  "name": "Otter Money",
+  "short_name": "Otter Money",
   "description": "Personal Budgeting. Simplified.",
   "start_url": "/",
   "display": "standalone",

@@ -82,7 +82,7 @@ export function InstallPrompt() {
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">Install HappySpends on iOS</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">Install Otter Money on iOS</p>
               <ol className="mt-2 space-y-1">
                 <li className="text-xs text-gray-600 dark:text-gray-300">1. Tap the <strong>Share</strong> button (⬆️) in Safari</li>
                 <li className="text-xs text-gray-600 dark:text-gray-300">2. Scroll and tap <strong>"Add to Home Screen"</strong></li>
@@ -116,7 +116,7 @@ export function InstallPrompt() {
               📲
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900 dark:text-white">Install HappySpends</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">Install Otter Money</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Add to your home screen for the best experience
               </p>

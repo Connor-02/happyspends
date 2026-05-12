@@ -3,13 +3,13 @@ import './globals.css';
 import { StoreProvider } from '@/components/providers/StoreProvider';
 
 export const metadata: Metadata = {
-  title: 'HappySpends — Personal Budgeting',
+  title: 'Otter Money — Personal Budgeting',
   description: 'A modern PWA budgeting app. Simple, smart, private.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'HappySpends',
+    title: 'Otter Money',
   },
   icons: {
     apple: '/icons/apple-touch-icon.png',

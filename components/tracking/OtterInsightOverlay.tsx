@@ -15,7 +15,7 @@ export interface OtterInsightProps {
 export function OtterInsightOverlay({
   visible,
   onDismiss,
-  heading = 'Insight from Happy Otter ✨',
+  heading = 'Insight from Otter Money ✨',
   openingLine,
   body,
   highlightText,
