@@ -83,15 +83,10 @@ export function OtterInsightOverlay({
                   boxShadow: '0 24px 64px rgba(0,0,0,0.24), 0 4px 16px rgba(0,0,0,0.10)',
                 }}
               >
-                {/* Pink quote mark */}
-                <div className="mb-3">
-                  <svg width="26" height="20" viewBox="0 0 28 22" fill="none">
-                    <path
-                      d="M0 22V13.156C0 9.458.938 6.396 2.813 3.969 4.719 1.542 7.51 0 11.188 0v4.625C9.625 4.896 8.354 5.583 7.375 6.688 6.396 7.76 5.906 9.135 5.906 10.812H11.5V22H0ZM16.5 22V13.156c0-3.698.938-6.76 2.813-9.187C21.219 1.542 24.01 0 27.688 0v4.625c-1.563.271-2.833.958-3.813 2.063-.979 1.073-1.469 2.448-1.469 4.124H28V22H16.5Z"
-                      fill="#EC4899"
-                    />
-                  </svg>
-                </div>
+                {/* Opening pink quote */}
+                <p className="text-5xl font-black leading-none mb-1 select-none" style={{ color: '#EC4899', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
+                  “
+                </p>
 
                 {/* Heading */}
                 <p
@@ -125,6 +120,11 @@ export function OtterInsightOverlay({
                     {closingLine}
                   </p>
                 )}
+
+                {/* Closing pink quote */}
+                <p className="text-5xl font-black leading-none text-right select-none mt-1" style={{ color: '#EC4899', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
+                  ”
+                </p>
 
                 {/* Tap to continue */}
                 <p

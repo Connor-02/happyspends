@@ -55,6 +55,11 @@ export default function TrackingPage() {
     setCheckIn(getCheckInStatus());
     setSnapshots(getHealthSnapshots());
     setPremiumData(loadPremiumStore());
+    // Show otter greeting once per session when tracking page loads
+    if (!otterShownRef.current) {
+      otterShownRef.current = true;
+      setShowOtterInsight(true);
+    }
   }, []);
 
   const handleHabitComplete = (habitId: string) => {
@@ -86,14 +91,6 @@ export default function TrackingPage() {
   const cashFlow = (summary.totalIncome || summary.plannedIncome) - (summary.totalExpenses + summary.totalBills);
   const cashFlowStr = sym + Math.abs(cashFlow).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const cashFlowPositive = cashFlow > 0;
-
-  function handleInsightsTabClick() {
-    setActiveTab('insights');
-    if (!otterShownRef.current) {
-      otterShownRef.current = true;
-      setShowOtterInsight(true);
-    }
-  }
 
   const healthColor =
     summary.budgetHealthScore >= 80 ? '#34d399' : summary.budgetHealthScore >= 50 ? '#f59e0b' : '#ef4444';
@@ -206,7 +203,7 @@ export default function TrackingPage() {
           {(['habits', 'insights', 'history'] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => tab === 'insights' ? handleInsightsTabClick() : setActiveTab(tab)}
+              onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all capitalize ${
                 activeTab === tab
                   ? 'bg-white dark:bg-gray-900 text-pink-500 shadow-sm'
