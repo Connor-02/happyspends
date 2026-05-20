@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { StoreProvider } from '@/components/providers/StoreProvider';
+import { ServiceWorkerRegistrar } from '@/components/ServiceWorkerRegistrar';
 
 export const metadata: Metadata = {
   title: 'Otter Money — Personal Budgeting',
@@ -33,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ServiceWorkerRegistrar />
         <StoreProvider>{children}</StoreProvider>
       </body>
     </html>
