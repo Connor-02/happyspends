@@ -67,41 +67,37 @@ export function clearStoredSubscription(): void {
  */
 const SW_READY_TIMEOUT_MS = 12_000;
 
-export async function subscribeToPush(): Promise<PushSubscription | null> {
-  if (!isPushSupported()) return null;
+/**
+ * Subscribe to Web Push. Throws with a human-readable message on failure.
+ * Always returns a live PushSubscription on success.
+ */
+export async function subscribeToPush(): Promise<PushSubscription> {
+  if (!isPushSupported()) throw new Error('Push notifications are not supported in this browser.');
 
   const publicKey = getVapidPublicKey();
-  if (!publicKey) {
-    console.error('[Push] NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set');
-    return null;
+  if (!publicKey) throw new Error('App configuration error: VAPID public key is missing.');
+
+  // Wait for the SW to become active, with a timeout so we never hang.
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(
+      () => reject(new Error('Service worker did not start in time. Try refreshing the page and enabling again.')),
+      SW_READY_TIMEOUT_MS,
+    )
+  );
+  const reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
+
+  // Reuse an existing browser subscription if one already exists.
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    // Use Uint8Array directly — more compatible than .buffer across browsers.
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as any,
+    });
   }
 
-  try {
-    // Wait for SW with a timeout so the button never hangs forever.
-    const swReady = navigator.serviceWorker.ready;
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error('Service worker did not become ready in time. Try refreshing the page.')),
-        SW_READY_TIMEOUT_MS,
-      )
-    );
-    const reg = await Promise.race([swReady, timeout]);
-
-    // Reuse an existing subscription if present
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey).buffer as ArrayBuffer,
-      });
-    }
-
-    storeSubscription(sub);
-    return sub;
-  } catch (err) {
-    console.error('[Push] subscribeToPush failed:', err);
-    return null;
-  }
+  storeSubscription(sub);
+  return sub;
 }
 
 export async function unsubscribeFromPush(): Promise<boolean> {

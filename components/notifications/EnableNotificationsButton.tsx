@@ -10,6 +10,7 @@ import {
   syncSubscriptionWithServer,
   sendTestPush,
   getStoredSubscription,
+  storeSubscription,
   clearStoredSubscription,
 } from '@/lib/pushService';
 import {
@@ -18,20 +19,19 @@ import {
 } from '@/lib/notificationService';
 import { saveNotificationPreferences, getNotificationPreferences } from '@/lib/premiumStorage';
 
-type PushState = 'idle' | 'requesting' | 'subscribed' | 'denied' | 'unsupported' | 'ios-not-installed';
+type PushState = 'checking' | 'idle' | 'requesting' | 'subscribed' | 'denied' | 'unsupported' | 'ios-not-installed';
 
 export function EnableNotificationsButton() {
-  const [state, setState] = useState<PushState>('idle');
+  const [state, setState] = useState<PushState>('checking');
   const [testSending, setTestSending] = useState(false);
   const [testSent, setTestSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Determine initial state on mount
+  // Determine initial state on mount — always ask the SW (source of truth).
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     if (!isPushSupported()) {
-      // iOS Safari without PWA install — explain requirement
       if (isIOS() && !isIOSStandalone()) {
         setState('ios-not-installed');
       } else {
@@ -46,33 +46,23 @@ export function EnableNotificationsButton() {
       return;
     }
 
-    // Check if already subscribed (localStorage cache)
-    const stored = getStoredSubscription();
-    if (stored && permission === 'granted') {
-      setState('subscribed');
-      return;
-    }
-
-    // Permission already granted but no localStorage cache — silently check
-    // for an existing SW subscription (handles re-installs / cleared storage).
-    if (permission === 'granted') {
-      navigator.serviceWorker.ready
-        .then((reg) =>
-          reg.pushManager.getSubscription().then((sub) => {
-            if (sub) {
-              // Found an active subscription — cache it and show subscribed state.
-              import('@/lib/pushService').then(({ storeSubscription }) =>
-                storeSubscription(sub)
-              );
-              setState('subscribed');
-            }
-            // No subscription found — keep 'idle' so user can re-subscribe.
-          })
-        )
-        .catch(() => {
-          // SW not ready yet — stays 'idle', user can click to subscribe.
-        });
-    }
+    // Ask the SW for a live subscription — this is the ground truth.
+    // Falls back to localStorage if the SW isn't ready yet.
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((liveSub) => {
+        if (liveSub) {
+          storeSubscription(liveSub); // keep localStorage in sync
+          setState('subscribed');
+        } else {
+          setState('idle');
+        }
+      })
+      .catch(() => {
+        // SW not available — fall back to localStorage cache
+        const stored = getStoredSubscription();
+        setState(stored && permission === 'granted' ? 'subscribed' : 'idle');
+      });
   }, []);
 
   const handleEnable = async () => {
@@ -91,9 +81,11 @@ export function EnableNotificationsButton() {
     }
 
     // Step 2 — subscribe to Web Push via service worker
-    const sub = await subscribeToPush();
-    if (!sub) {
-      setError('Could not subscribe. If the page just updated, try refreshing once and enabling again.');
+    let sub: PushSubscription;
+    try {
+      sub = await subscribeToPush();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to subscribe to push notifications.');
       setState('idle');
       return;
     }
@@ -116,6 +108,38 @@ export function EnableNotificationsButton() {
     setState('idle');
   };
 
+  // Force test: get subscription directly from the SW (bypasses localStorage).
+  // Useful to verify push is working even when state is unclear.
+  const handleForceSendTest = async () => {
+    setTestSending(true);
+    setTestSent(false);
+    setError(null);
+    try {
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Service worker not ready. Try refreshing the page.')), 12000)
+      );
+      const reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
+      const liveSub = await reg.pushManager.getSubscription();
+      if (!liveSub) {
+        setError('No active push subscription found in browser. Enable notifications first.');
+        return;
+      }
+      storeSubscription(liveSub);
+      setState('subscribed');
+      const ok = await sendTestPush(liveSub.toJSON());
+      if (ok) {
+        setTestSent(true);
+        setTimeout(() => setTestSent(false), 4000);
+      } else {
+        setError('Server failed to send the test push. Check Vercel function logs.');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Force test failed.');
+    } finally {
+      setTestSending(false);
+    }
+  };
+
   const handleSendTest = async () => {
     const sub = getStoredSubscription();
     if (!sub) {
@@ -135,7 +159,14 @@ export function EnableNotificationsButton() {
   };
 
   // ── Render states ────────────────────────────────────────────────────────────
-
+  if (state === 'checking') {
+    return (
+      <div className="flex items-center gap-2 py-2 text-xs text-gray-400">
+        <Loader2 size={14} className="animate-spin" />
+        <span>Checking notification status…</span>
+      </div>
+    );
+  }
   if (state === 'unsupported') {
     return (
       <div className="flex items-start gap-3 p-3 rounded-2xl bg-gray-50 border border-gray-200">
@@ -229,6 +260,16 @@ export function EnableNotificationsButton() {
       </button>
 
       {error && <p className="text-xs text-red-500">{error}</p>}
+
+      {/* Force test — always visible for debugging */}
+      <button
+        onClick={handleForceSendTest}
+        disabled={testSending}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-200 text-gray-400 hover:text-pink-600 hover:border-pink-200 transition-all disabled:opacity-60 cursor-pointer"
+      >
+        {testSending ? <Loader2 size={12} className="animate-spin" /> : <Bell size={12} />}
+        {testSending ? 'Sending…' : testSent ? 'Sent ✓' : 'Force send test notification'}
+      </button>
     </div>
   );
 }
