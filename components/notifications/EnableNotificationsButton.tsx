@@ -46,23 +46,39 @@ export function EnableNotificationsButton() {
       return;
     }
 
-    // Ask the SW for a live subscription — this is the ground truth.
-    // Falls back to localStorage if the SW isn't ready yet.
-    navigator.serviceWorker.ready
-      .then((reg) => reg.pushManager.getSubscription())
-      .then((liveSub) => {
-        if (liveSub) {
-          storeSubscription(liveSub); // keep localStorage in sync
-          setState('subscribed');
-        } else {
+    // Use getRegistration() — resolves instantly with current state.
+    // .ready hangs forever if the SW is stuck installing, so we never use it here.
+    const fallback = setTimeout(() => setState('idle'), 4000);
+
+    navigator.serviceWorker
+      .getRegistration()
+      .then(async (reg) => {
+        clearTimeout(fallback);
+        if (!reg) {
+          // No SW at all — fall back to localStorage
+          const stored = getStoredSubscription();
+          setState(stored && permission === 'granted' ? 'subscribed' : 'idle');
+          return;
+        }
+        try {
+          const liveSub = await reg.pushManager.getSubscription();
+          if (liveSub) {
+            storeSubscription(liveSub);
+            setState('subscribed');
+          } else {
+            setState('idle');
+          }
+        } catch {
           setState('idle');
         }
       })
       .catch(() => {
-        // SW not available — fall back to localStorage cache
+        clearTimeout(fallback);
         const stored = getStoredSubscription();
         setState(stored && permission === 'granted' ? 'subscribed' : 'idle');
       });
+
+    return () => clearTimeout(fallback);
   }, []);
 
   const handleEnable = async () => {
@@ -115,10 +131,12 @@ export function EnableNotificationsButton() {
     setTestSent(false);
     setError(null);
     try {
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Service worker not ready. Try refreshing the page.')), 12000)
-      );
-      const reg = await Promise.race([navigator.serviceWorker.ready, timeout]);
+      // getRegistration() resolves immediately — no risk of hanging.
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (!reg) {
+        setError('No service worker found. Make sure the app is installed as a PWA and refresh.');
+        return;
+      }
       const liveSub = await reg.pushManager.getSubscription();
       if (!liveSub) {
         setError('No active push subscription found in browser. Enable notifications first.');

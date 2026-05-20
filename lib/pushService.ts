@@ -92,7 +92,7 @@ export async function subscribeToPush(): Promise<PushSubscription> {
     // Use Uint8Array directly — more compatible than .buffer across browsers.
     sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey) as any,
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
     });
   }
 
