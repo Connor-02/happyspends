@@ -65,6 +65,8 @@ export function clearStoredSubscription(): void {
  * then subscribes to push via the service worker.
  * Returns the subscription or null on failure.
  */
+const SW_READY_TIMEOUT_MS = 12_000;
+
 export async function subscribeToPush(): Promise<PushSubscription | null> {
   if (!isPushSupported()) return null;
 
@@ -75,8 +77,15 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
   }
 
   try {
-    // Ensure SW is ready
-    const reg = await navigator.serviceWorker.ready;
+    // Wait for SW with a timeout so the button never hangs forever.
+    const swReady = navigator.serviceWorker.ready;
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error('Service worker did not become ready in time. Try refreshing the page.')),
+        SW_READY_TIMEOUT_MS,
+      )
+    );
+    const reg = await Promise.race([swReady, timeout]);
 
     // Reuse an existing subscription if present
     let sub = await reg.pushManager.getSubscription();

@@ -50,6 +50,28 @@ export function EnableNotificationsButton() {
     const stored = getStoredSubscription();
     if (stored && permission === 'granted') {
       setState('subscribed');
+      return;
+    }
+
+    // Permission already granted but no localStorage cache — silently check
+    // for an existing SW subscription (handles re-installs / cleared storage).
+    if (permission === 'granted') {
+      navigator.serviceWorker.ready
+        .then((reg) =>
+          reg.pushManager.getSubscription().then((sub) => {
+            if (sub) {
+              // Found an active subscription — cache it and show subscribed state.
+              import('@/lib/pushService').then(({ storeSubscription }) =>
+                storeSubscription(sub)
+              );
+              setState('subscribed');
+            }
+            // No subscription found — keep 'idle' so user can re-subscribe.
+          })
+        )
+        .catch(() => {
+          // SW not ready yet — stays 'idle', user can click to subscribe.
+        });
     }
   }, []);
 
@@ -71,7 +93,7 @@ export function EnableNotificationsButton() {
     // Step 2 — subscribe to Web Push via service worker
     const sub = await subscribeToPush();
     if (!sub) {
-      setError('Could not subscribe to push notifications. Make sure the app is installed and try again.');
+      setError('Could not subscribe. If the page just updated, try refreshing once and enabling again.');
       setState('idle');
       return;
     }
