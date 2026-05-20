@@ -83,8 +83,8 @@ export function runReminderChecks(appStore: AppStore): void {
     const { checkedInToday } = getCheckInStatus();
     if (!checkedInToday) {
       const lastCheckKey = `hs_checkin_notify_${today}`;
-      if (!sessionStorage.getItem(lastCheckKey)) {
-        sessionStorage.setItem(lastCheckKey, '1');
+      if (!localStorage.getItem(lastCheckKey)) {
+        localStorage.setItem(lastCheckKey, '1');
         const msgs: Record<string, string[]> = {
           gentle: ["How did today's spending go? Take a moment to log it 😊", "Quick check-in: any spending to add today?"],
           direct: ["Log your spending now. Takes 10 seconds.", "Don't forget to track today's spending."],
@@ -107,8 +107,8 @@ export function runReminderChecks(appStore: AppStore): void {
   // ── Low balance warning
   if (prefs.overspendingAlerts && summary.amountLeftToSpend > 0 && summary.amountLeftToSpend < 50) {
     const key = `hs_lowbal_notify_${today}`;
-    if (!sessionStorage.getItem(key)) {
-      sessionStorage.setItem(key, '1');
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, '1');
       const msg = `You have ${formatCurrency(summary.amountLeftToSpend, sym)} left to spend this period. Take it easy!`;
       addNotification({ type: 'warning', title: 'Low remaining budget', message: msg, priority: 'high', actionLink: '/budget' });
       sendBrowserNotification('⚠️ Low Budget', msg, { url: '/budget', tag: 'lowbal' });
@@ -122,8 +122,8 @@ export function runReminderChecks(appStore: AppStore): void {
     );
     over.slice(0, 2).forEach((cs) => {
       const key = `hs_over_${cs.category.id}_${today}`;
-      if (!sessionStorage.getItem(key)) {
-        sessionStorage.setItem(key, '1');
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, '1');
         const msg = `${cs.category.name} is over budget — ${formatCurrency(cs.actual, sym)} of ${formatCurrency(cs.category.planned, sym)} planned.`;
         addNotification({ type: 'warning', title: `Over budget: ${cs.category.name}`, message: msg, priority: 'medium', actionLink: '/budget' });
         sendBrowserNotification('⚠️ Over Budget', msg, { url: '/budget', tag: `over-${cs.category.id}` });
@@ -139,8 +139,8 @@ export function runReminderChecks(appStore: AppStore): void {
       milestones.forEach((m) => {
         if (progress >= m) {
           const key = `hs_goal_${g.id}_${Math.round(m * 100)}`;
-          if (!sessionStorage.getItem(key)) {
-            sessionStorage.setItem(key, '1');
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, '1');
             const pct = Math.round(m * 100);
             const msg = m >= 1
               ? `🎉 You've reached your goal: ${g.name}!`
@@ -158,8 +158,8 @@ export function runReminderChecks(appStore: AppStore): void {
   // ── Save health snapshot monthly
   const month = today.substring(0, 7);
   const snapKey = `hs_snap_${month}`;
-  if (!sessionStorage.getItem(snapKey)) {
-    sessionStorage.setItem(snapKey, '1');
+  if (!localStorage.getItem(snapKey)) {
+    localStorage.setItem(snapKey, '1');
     saveHealthSnapshot({
       date: month,
       healthScore: summary.budgetHealthScore,

@@ -16,13 +16,14 @@ export function NotificationPermissionBanner() {
   const [granted, setGranted] = useState(false);
 
   useEffect(() => {
+    // Banner is intentionally NOT auto-shown. Notification permission should
+    // only be requested from an explicit user gesture (e.g., via Settings).
+    // This effect only checks the current permission state for rendering.
     if (typeof window === 'undefined') return;
     if (!('Notification' in window)) return;
-    if (Notification.permission !== 'default') return;
+    if (Notification.permission === 'granted') return;
     if (hasAskedNotificationPermission()) return;
-    // Show after 3s
-    const t = setTimeout(() => setShow(true), 3000);
-    return () => clearTimeout(t);
+    // Do not auto-show — leave show=false.
   }, []);
 
   const handleEnable = async () => {

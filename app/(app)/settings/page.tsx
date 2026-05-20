@@ -8,12 +8,9 @@ import {
   saveNotificationPreferences,
   updateReminder,
 } from '@/lib/premiumStorage';
-import {
-  requestNotificationPermission,
-  getNotificationPermission,
-} from '@/lib/notificationService';
 import type { NotificationPreference, Reminder, ReminderTone } from '@/types/premium';
 import { Card } from '@/components/ui/Card';
+import { EnableNotificationsButton } from '@/components/notifications/EnableNotificationsButton';
 
 function stagger(i: number) {
   return {
@@ -27,7 +24,6 @@ export default function SettingsPage() {
   const router = useRouter();
   const [prefs, setPrefs] = useState<NotificationPreference | null>(null);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [permission, setPermission] = useState<NotificationPermission>('default');
   const [saved, setSaved] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
@@ -40,7 +36,6 @@ export default function SettingsPage() {
     const store = loadPremiumStore();
     setPrefs(store.notificationPreferences);
     setReminders(store.reminders);
-    setPermission(getNotificationPermission());
   }, []);
 
   const save = (updated: NotificationPreference) => {
@@ -53,14 +48,6 @@ export default function SettingsPage() {
   const toggle = (key: keyof NotificationPreference) => {
     if (!prefs) return;
     save({ ...prefs, [key]: !prefs[key as keyof NotificationPreference] } as NotificationPreference);
-  };
-
-  const handleEnablePush = async () => {
-    const result = await requestNotificationPermission();
-    setPermission(result);
-    if (result === 'granted' && prefs) {
-      save({ ...prefs, pushEnabled: true });
-    }
   };
 
   const handleReminderToggle = (id: string) => {
@@ -88,25 +75,10 @@ export default function SettingsPage() {
             <div className="w-12 h-12 rounded-2xl gradient-pink flex items-center justify-center text-2xl shrink-0">🔔</div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900 dark:text-white">Push Notifications</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {permission === 'granted'
-                  ? 'Browser notifications are enabled.'
-                  : permission === 'denied'
-                  ? 'Blocked in browser settings. Check your browser to re-enable.'
-                  : 'Get reminders even when the app is in the background.'}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 mb-3">
+                Get reminders even when the app is closed — bill alerts, budget nudges, and goal updates.
               </p>
-              {permission !== 'denied' && (
-                <button
-                  onClick={permission === 'granted' ? undefined : handleEnablePush}
-                  className={`mt-2 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                    permission === 'granted'
-                      ? 'bg-emerald-100 text-emerald-600 cursor-default'
-                      : 'bg-pink-500 text-white hover:bg-pink-600 active:scale-95'
-                  }`}
-                >
-                  {permission === 'granted' ? '✓ Enabled' : 'Enable Notifications'}
-                </button>
-              )}
+              <EnableNotificationsButton />
             </div>
           </div>
         </Card>
