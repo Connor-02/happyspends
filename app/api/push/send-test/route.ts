@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
 
-// Configure VAPID credentials once per module load
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL ?? 'mailto:admin@example.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? '',
-  process.env.VAPID_PRIVATE_KEY ?? '',
-);
-
 export async function POST(req: NextRequest) {
+  // Read keys inside the handler so build-time evaluation never crashes.
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const email = process.env.VAPID_EMAIL ?? 'mailto:admin@example.com';
 
   if (!publicKey || !privateKey) {
     return NextResponse.json(
-      { error: 'VAPID keys not configured. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in environment variables.' },
+      { error: 'VAPID keys not configured. Set NEXT_PUBLIC_VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in Vercel environment variables.' },
       { status: 500 },
     );
   }
+
+  // Configure inside the handler so it only runs at request time.
+  webpush.setVapidDetails(email, publicKey, privateKey);
 
   try {
     const body = await req.json();
